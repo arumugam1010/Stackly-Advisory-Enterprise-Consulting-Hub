@@ -1194,6 +1194,11 @@ ul {
     .nav-hamburger-btn {
         display: inline-flex !important;
     }
+
+    .navbar .search-icon,
+    .navbar .join-btn {
+        display: none !important;
+    }
 }
 
 @media (max-width: 768px) {

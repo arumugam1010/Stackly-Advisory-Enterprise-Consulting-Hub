@@ -225,7 +225,7 @@ ul {
 }
 
 .logo-icon {
-    height: 32px;
+    height: 40px;
     width: auto;
     object-fit: contain;
     filter: brightness(0);
@@ -386,7 +386,7 @@ ul {
 }
 
 .public-sidebar-brand img {
-    height: 32px;
+    height: 36px;
     width: auto;
     object-fit: contain;
     filter: brightness(0) invert(1);
@@ -1251,7 +1251,7 @@ ul {
     }
 
     .navbar .logo-icon {
-        height: 28px;
+        height: 38px;
     }
 
     .nav-hamburger-btn {

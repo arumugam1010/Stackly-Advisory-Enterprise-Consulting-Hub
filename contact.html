@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Direct Institutional Dialogue | ADVISOR</title>
+    <meta name="description"
+        content="Confidential counsel for executive boards, sovereign wealth trustees, and global enterprise leaders navigating mission-critical capital reconfigurations.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar" style="border-top: 4px solid #0ea5e9;">
+        <div class="container nav-container">
+            <div class="logo">
+                <a href="index.html" style="display: flex; align-items: center;">
+                    <img src="assets/logo-stackly.webp" alt="ADVISOR Logo" class="logo-icon">
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">HOME</a></li>
+                <li><a href="about.html">ABOUT US</a></li>
+                <li><a href="solutions.html">SOLUTIONS</a></li>
+                <li><a href="services.html">SERVICES</a></li>
+                <li><a href="teams.html">OUR TEAM</a></li>
+                <li><a href="insights.html">INSIGHTS</a></li>
+                <li><a href="contact.html" class="active">CONTACT US</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="icon-btn search-icon" aria-label="Search"><i
+                        class="fa-solid fa-magnifying-glass"></i></button>
+                <a href="signin.html" class="btn btn-primary join-btn">JOIN US</a>
+                <button class="nav-hamburger-btn" id="nav-hamburger-btn" aria-label="Open Navigation Drawer"
+                    type="button">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="contact-hero">
+        <div class="container">
+            <div class="contact-hero-grid">
+                <!-- Left: Headline & Narrative -->
+                <div class="contact-hero-left">
+                    <span class="contact-eyebrow">
+                        <span
+                            style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                        DIRECT INSTITUTIONAL DIALOGUE
+                    </span>
+                    <h1>Let’s Talk Business</h1>
+                    <p class="contact-hero-desc">
+                        Confidential counsel for executive boards, sovereign wealth trustees, and global enterprise
+                        leaders navigating mission-critical capital reconfigurations, governance stress, and strategic
+                        transitions.
+                    </p>
+                </div>
+
+                <!-- Right: Stacked Guarantee Cards -->
+                <div class="contact-guarantee-stack">
+                    <div class="guarantee-card">
+                        <div class="guarantee-icon-wrap"><i class="fa-solid fa-clock"></i></div>
+                        <div class="guarantee-info">
+                            <h4>&lt; 24H EXECUTIVE RESPONSE</h4>
+                            <p>Guaranteed partner evaluation</p>
+                        </div>
+                    </div>
+
+                    <div class="guarantee-card">
+                        <div class="guarantee-icon-wrap"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div class="guarantee-info">
+                            <h4>100% CONFIDENTIAL &amp; UNDER NDA</h4>
+                            <p>Air-gapped data retention options</p>
+                        </div>
+                    </div>
+
+                    <div class="guarantee-card">
+                        <div class="guarantee-icon-wrap"><i class="fa-solid fa-globe"></i></div>
+                        <div class="guarantee-info">
+                            <h4>GLOBAL C-SUITE ACCESS</h4>
+                            <p>Direct senior partner lead on all briefs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Engagement Intake & Direct Hubs Section -->
+    <section class="intake-section" id="intake">
+        <div class="container">
+            <div class="intake-grid">
+                <!-- Left: Intake Form Card -->
+                <div class="intake-form-card">
+                    <div class="intake-form-header">
+                        <span class="contact-eyebrow">DIRECT CORRESPONDENCE</span>
+                        <h2>Initiate an Engagement</h2>
+                        <p>Provide brief context regarding your advisory needs. Your submission will be routed directly
+                            to the relevant sector lead.</p>
+                    </div>
+
+                    <form action="404.html" method="GET"
+                        onsubmit="event.preventDefault(); window.location.href='404.html';">
+                        <div class="form-row">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" for="full-name">FULL NAME *</label>
+                                <input type="text" id="full-name" class="form-input" placeholder="Eleanor Vance"
+                                    required pattern="^[A-Za-z\s.'-]+$" title="Please enter letters only (no numbers)"
+                                    oninput="this.value=this.value.replace(/[0-9]/g, '')">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" for="work-email">WORK EMAIL *</label>
+                                <input type="email" id="work-email" class="form-input"
+                                    placeholder="e.vance@institution.com" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="company-name">COMPANY / ORGANIZATION NAME</label>
+                            <input type="text" id="company-name" class="form-input"
+                                placeholder="Vance Capital Partners">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">ENGAGEMENT TOPIC / PRACTICE AREA *</label>
+                            <div class="topic-selector-grid">
+                                <label class="topic-option active">
+                                    <input type="radio" name="topic" value="Business Advisory" checked
+                                        style="accent-color: #0f172a;">
+                                    <span>Business Advisory</span>
+                                </label>
+                                <label class="topic-option">
+                                    <input type="radio" name="topic" value="General Inquiry"
+                                        style="accent-color: #0f172a;">
+                                    <span>General Inquiry</span>
+                                </label>
+                                <label class="topic-option">
+                                    <input type="radio" name="topic" value="Institutional Partnerships"
+                                        style="accent-color: #0f172a;">
+                                    <span>Institutional Partnerships</span>
+                                </label>
+                                <label class="topic-option">
+                                    <input type="radio" name="topic" value="Media & Press Relations"
+                                        style="accent-color: #0f172a;">
+                                    <span>Media &amp; Press Relations</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="summary">EXECUTIVE SUMMARY / INQUIRY DETAILS *</label>
+                            <textarea id="summary" class="form-textarea"
+                                placeholder="Please outline the scope, timeline, and primary objectives of your consultation..."
+                                required></textarea>
+                        </div>
+
+                        <div class="form-actions-row">
+                            <button type="submit" class="btn-send-message">SEND MESSAGE</button>
+                            <p class="form-nda-disclaimer">Confidentiality protected under standard NDA protocols.</p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: Information & Hubs Column -->
+                <div class="intake-info-column">
+                    <!-- Boardroom Photography Card -->
+                    <div class="board-photo-card">
+                        <img src="assets/contact-executive-chambers.webp"
+                            alt="Global Advisory Board">
+                        <span class="board-tag-overlay">GLOBAL ADVISORY BOARD</span>
+                    </div>
+
+                    <!-- Institutional Standards Card -->
+                    <div class="standards-card">
+                        <span class="contact-eyebrow">INSTITUTIONAL STANDARDS</span>
+                        <h3>Uncompromising Confidentiality</h3>
+                        <p>All consultations operate under rigorous governance frameworks. Direct briefings with senior
+                            partners are scheduled within one business day.</p>
+                    </div>
+
+                    <!-- Global Hubs Card -->
+                    <div class="hubs-card">
+                        <div class="hubs-header">
+                            <h3>Global Hubs</h3>
+                            <span class="hubs-badge">3 DIRECT HUBS</span>
+                        </div>
+
+                        <!-- Hub 1 -->
+                        <div class="hub-item">
+                            <div class="hub-title-row">
+                                <span class="hub-name">New York (HQ)</span>
+                                <span class="hub-tz">EST (UTC-5)</span>
+                            </div>
+                            <p class="hub-address">400 Madison Avenue, Floor 44, New York, NY 10017</p>
+                            <span class="hub-tel">Tel: +1 (212) 890-4400</span>
+                        </div>
+
+                        <!-- Hub 2 -->
+                        <div class="hub-item">
+                            <div class="hub-title-row">
+                                <span class="hub-name">London</span>
+                                <span class="hub-tz">GMT (UTC+0)</span>
+                            </div>
+                            <p class="hub-address">25 Bank Street, Canary Wharf, Level 28, London E14 5JP</p>
+                            <span class="hub-tel">Tel: +44 20 7946 0991</span>
+                        </div>
+
+                        <!-- Working Hours Note -->
+                        <div class="working-hours-note">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>INSTITUTIONAL WORKING HOURS: Monday to Friday: 8:00 AM – 6:00 PM (Local Standard
+                                Time)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Office Network Section -->
+    <section class="network-section">
+        <div class="container">
+            <div class="network-header">
+                <span class="contact-eyebrow">PHYSICAL PRESENCE</span>
+                <h2>Our Office Network</h2>
+                <p>Strategically positioned in primary capital centers to support direct, round-the-clock advisory
+                    mandates and secure executive chambers.</p>
+            </div>
+
+            <div class="network-grid">
+                <!-- Office 1: New York -->
+                <article class="office-card">
+                    <div class="office-top-meta">
+                        <span>UNITED STATES</span>
+                        <span>EST / UTC-5</span>
+                    </div>
+                    <h3>New York</h3>
+                    <p class="office-address">One Vanderbilt / 400 Madison<br>Floor 44, Suite 4400<br>New York, NY 10017
+                    </p>
+                    <div class="office-contact-details">
+                        <div><a href="mailto:ny.office@advisor-group.com">ny.office@advisor-group.com</a></div>
+                        <div>+1 (212) 890-4400</div>
+                    </div>
+                    <div class="office-focus-box">
+                        <span class="office-focus-label">KEY FOCUS:</span>
+                        <p class="office-focus-text">Americas M&amp;A, Special Situations</p>
+                    </div>
+                </article>
+
+                <!-- Office 2: London -->
+                <article class="office-card">
+                    <div class="office-top-meta">
+                        <span>UNITED KINGDOM</span>
+                        <span>GMT / UTC+0</span>
+                    </div>
+                    <h3>London</h3>
+                    <p class="office-address">25 Bank Street<br>Canary Wharf, Level 28<br>London E14 5JP</p>
+                    <div class="office-contact-details">
+                        <div><a href="mailto:uk.office@advisor-group.com">uk.office@advisor-group.com</a></div>
+                        <div>+44 20 7946 0991</div>
+                    </div>
+                    <div class="office-focus-box">
+                        <span class="office-focus-label">KEY FOCUS:</span>
+                        <p class="office-focus-text">Cross-Border Antitrust, European Restructuring</p>
+                    </div>
+                </article>
+
+                <!-- Office 3: Singapore -->
+                <article class="office-card">
+                    <div class="office-top-meta">
+                        <span>SINGAPORE</span>
+                        <span>SGT / UTC+8</span>
+                    </div>
+                    <h3>Singapore</h3>
+                    <p class="office-address">Marina Bay Financial Centre<br>Tower 2, Suite 32-01<br>Singapore 018983
+                    </p>
+                    <div class="office-contact-details">
+                        <div><a href="mailto:sg.office@advisor-group.com">sg.office@advisor-group.com</a></div>
+                        <div>+65 6712 9000</div>
+                    </div>
+                    <div class="office-focus-box">
+                        <span class="office-focus-label">KEY FOCUS:</span>
+                        <p class="office-focus-text">Sovereign Wealth, APAC Capital Flows</p>
+                    </div>
+                </article>
+
+                <!-- Office 4: Zurich -->
+                <article class="office-card">
+                    <div class="office-top-meta">
+                        <span>SWITZERLAND</span>
+                        <span>CET / UTC+1</span>
+                    </div>
+                    <h3>Zurich</h3>
+                    <p class="office-address">Paradeplatz 8<br>Bleicherweg Chambers, Floor 5<br>8001 Zürich, Switzerland
+                    </p>
+                    <div class="office-contact-details">
+                        <div><a href="mailto:ch.office@advisor-group.com">ch.office@advisor-group.com</a></div>
+                        <div>+41 44 215 8800</div>
+                    </div>
+                    <div class="office-focus-box">
+                        <span class="office-focus-label">KEY FOCUS:</span>
+                        <p class="office-focus-text">Private Capital, High-Net Fiduciary Trusts</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Geographic Footprint Section -->
+    <section class="footprint-section">
+        <div class="container">
+            <div class="footprint-header">
+                <div class="footprint-header-left">
+                    <span class="contact-eyebrow">GEOGRAPHIC FOOTPRINT</span>
+                    <h2>Global Presence &amp; Regional Access</h2>
+                </div>
+                <div class="footprint-switchers">
+                    <a href="#map" class="switcher-pill active">NEW YORK</a>
+                    <a href="#map" class="switcher-pill">LONDON</a>
+                    <a href="#map" class="switcher-pill">SINGAPORE</a>
+                </div>
+            </div>
+
+            <!-- Map Canvas Card -->
+            <div class="map-canvas-card" id="map">
+                <!-- Clean stylized global projection backdrop -->
+                <svg class="map-background-svg" viewBox="0 0 1200 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="1200" height="600" fill="#f8fafc" />
+                    <!-- Simplified abstract geopolitical continent silhouettes -->
+                    <path d="M180,120 Q240,90 320,110 T420,190 T350,280 T260,340 T190,260 Z" fill="#e2e8f0" />
+                    <path d="M260,340 Q320,380 340,460 T290,560 T220,480 T240,360 Z" fill="#e2e8f0" />
+                    <path d="M480,100 Q620,80 720,120 T780,240 T650,260 T520,200 Z" fill="#e2e8f0" />
+                    <path d="M500,260 Q620,280 640,380 T590,500 T480,440 T460,300 Z" fill="#e2e8f0" />
+                    <path d="M720,120 Q920,90 1060,160 T1120,320 T940,320 T800,220 Z" fill="#e2e8f0" />
+                    <path d="M920,360 Q1040,380 1060,460 T980,540 T880,480 Z" fill="#e2e8f0" />
+                    <!-- Interconnect coordinate lines -->
+                    <path d="M264,228 Q440,160 564,192" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
+                    <path d="M564,192 Q720,240 888,372" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
+                </svg>
+
+                <div class="map-latency-badge">
+                    <span style="color: #10b981; margin-right: 0.35rem;">●</span>
+                    Global Network Latency &lt; 40ms
+                </div>
+
+                <!-- Interactive Location Markers -->
+                <div class="map-pin pin-ny">New York (4400 Madison)</div>
+                <div class="map-pin pin-london">London (Canary Wharf)</div>
+                <div class="map-pin pin-sg">Singapore (MBFC)</div>
+
+                <!-- Overlaid Inspector Card -->
+                <div class="map-inspector-card">
+                    <div class="inspector-top-meta">
+                        <span class="inspector-coord">40.7580° N, 73.9855° W</span>
+                        <span class="inspector-badge">HQ • ACTIVE</span>
+                    </div>
+                    <h3 class="inspector-title">New York Headquarters</h3>
+                    <p class="inspector-address">400 Madison Avenue, Floor 44<br>New York, NY 10017, United States</p>
+                    <div class="inspector-actions-row">
+                        <a href="404.html" class="btn-inspector-directions">GET DIRECTIONS</a>
+                        <span class="inspector-phone">+1 (212) 890-4400</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Frequently Asked Questions Section -->
+    <section class="faq-section">
+        <div class="container">
+            <div class="faq-header">
+                <span class="contact-eyebrow">COMMON QUESTIONS</span>
+                <h2>Frequently Asked Questions</h2>
+                <p>Essential information regarding institutional onboarding, timing, and virtual protocols.</p>
+            </div>
+
+            <div class="faq-grid">
+                <!-- FAQ 1 -->
+                <div class="faq-card">
+                    <h3>How quickly will someone get back to me?</h3>
+                    <p>Inquiries submitted through our verified portal are reviewed by a partner-level coordinator and
+                        responded to within 24 business hours.</p>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="faq-card">
+                    <h3>Can we schedule a call directly?</h3>
+                    <p>Yes. Following the initial scope verification, your team receives direct calendar coordinates for
+                        senior sector partners in New York, London, or Singapore.</p>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="faq-card">
+                    <h3>Do you offer virtual consultations?</h3>
+                    <p>All advisory practices maintain dedicated encrypted video briefing capabilities across all global
+                        time zones with sovereign security measures.</p>
+                </div>
+            </div>
+
+            <!-- Expedited Transaction Line Banner -->
+            <div class="expedited-banner">
+                <div class="expedited-text">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Need immediate urgent M&amp;A or restructuring representation? Contact our expedited
+                        transaction line.</span>
+                </div>
+                <a href="404.html" class="expedited-link">PRIORITY LINE &rarr;</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Next Steps CTA Banner -->
+    <section class="next-steps-section">
+        <div class="container">
+            <div class="next-steps-grid">
+                <div class="next-steps-left">
+                    <span class="contact-eyebrow mint-accent">NEXT STEPS</span>
+                    <h2>Ready to take your business<br>forward?</h2>
+                    <p>Reach out today to discuss how our advisors can help you achieve your goals.</p>
+                </div>
+                <div class="next-steps-buttons">
+                    <a href="404.html" class="btn btn-accent"
+                        style="padding: 0.95rem 1.85rem; font-weight: 700; text-transform: uppercase;">SEND A
+                        MESSAGE</a>
+                    <a href="404.html" class="btn-cta-outline"
+                        style="padding: 0.95rem 1.85rem; font-weight: 700; text-transform: uppercase;">CALL OUR
+                        OFFICE</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <div class="logo">
+                    <img src="assets/logo-stackly.webp" alt="ADVISOR Logo" class="logo-icon">
+                </div>
+                <p>Architecting the foundation for institutional growth through rigorous precision and contemporary
+                    innovation.</p>
+                <div class="social-links">
+                    <a href="404.html" aria-label="Globe"><i class="fa-solid fa-globe"></i></a>
+                    <a href="404.html" aria-label="Share"><i class="fa-solid fa-share-nodes"></i></a>
+                    <a href="404.html" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>SOLUTIONS</h4>
+                <ul>
+                    <li><a href="solutions.html#practice-01">Strategic Consulting</a></li>
+                    <li><a href="solutions.html#practice-02">Financial Advisory</a></li>
+                    <li><a href="solutions.html#practice-04">Digital Transformation</a></li>
+                    <li><a href="solutions.html#practice-06">Risk Management</a></li>
+                    <li><a href="solutions.html#practice-05">Human Capital</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>COMPANY</h4>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="teams.html">Our Team</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Global Offices</a></li>
+                    <li><a href="#">ESG Commitment</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>CONTACT</h4>
+                <p>1200 Avenue of the Americas<br>New York, NY 10036</p>
+                <p>+1 (212) 555-0198</p>
+                <p>contact@advisor.com</p>
+            </div>
+        </div>
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 Advisor Institutional Group. All rights reserved.</p>
+                <div class="bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive script for topic selection & map switcher -->
+    <script>
+        document.querySelectorAll('.topic-option').forEach(opt => {
+            opt.addEventListener('click', function () {
+                document.querySelectorAll('.topic-option').forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.switcher-pill').forEach(pill => {
+            pill.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelectorAll('.switcher-pill').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

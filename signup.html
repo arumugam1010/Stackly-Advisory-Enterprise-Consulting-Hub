@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create an Account - Client Registration | Stackly</title>
+    <meta name="description" content="Join ADVISOR to access institutional intelligence, research, and advisory services.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page">
+
+    <!-- Header Navigation -->
+    <header class="signup-navbar">
+        <div class="signup-logo">
+            <a href="index.html" style="display: flex; align-items: center;">
+                <img src="assets/logo-stackly.webp" alt="Stackly Logo">
+            </a>
+        </div>
+        <div class="signup-nav-right">
+           
+            <a href="contact.html" class="signup-nav-link">Need help?</a>
+        </div>
+    </header>
+
+    <!-- Main Registration Viewport -->
+    <main class="signup-main">
+        <!-- Sign Up Card -->
+        <div class="signup-card">
+            <h1 class="signup-title">Create an Account</h1>
+            <p class="signup-subtitle">Join ADVISOR. to access institutional intelligence, research, and advisory services.</p>
+
+            <!-- Social Logins (Google & Microsoft) -->
+            <div class="social-buttons-grid">
+                <!-- Google Button -->
+                <a href="404.html" class="btn-social" aria-label="Sign up with Google">
+                    <svg class="social-icon-svg" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.24v3.15C3.26 21.36 7.33 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.24C.45 8.15 0 9.92 0 12s.45 3.85 1.24 5.42l4.04-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.24 6.58l4.04 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                    </svg>
+                    <span>Google</span>
+                </a>
+
+                <!-- Microsoft Button -->
+                <a href="404.html" class="btn-social" aria-label="Sign up with Microsoft">
+                    <svg class="social-icon-svg" viewBox="0 0 21 21">
+                        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                    </svg>
+                    <span>Microsoft</span>
+                </a>
+            </div>
+
+            <!-- Divider -->
+            <div class="signup-divider">
+                <span>OR CONTINUE WITH</span>
+            </div>
+
+            <form id="signup-form" novalidate>
+                <!-- Role Selection -->
+                <div class="signup-form-group" style="margin-bottom: 1.25rem;">
+                    <label class="signup-label">SELECT ACCESS ROLE</label>
+                    <div class="role-selector-grid" id="role-selector">
+                        <div class="role-card" data-role="Admin" tabindex="0">
+                            <i class="fa-solid fa-user-shield role-icon"></i>
+                            <span class="role-name">Admin</span>
+                            <span class="role-desc">System Oversight</span>
+                        </div>
+                        <div class="role-card active" data-role="Manager" tabindex="0">
+                            <i class="fa-solid fa-briefcase role-icon"></i>
+                            <span class="role-name">Manager</span>
+                            <span class="role-desc">Practice Lead</span>
+                        </div>
+                        <div class="role-card" data-role="Client" tabindex="0">
+                            <i class="fa-solid fa-building-user role-icon"></i>
+                            <span class="role-name">Client</span>
+                            <span class="role-desc">Enterprise Partner</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="selected-role" name="role" value="Manager">
+                </div>
+
+                <!-- Alert Message Box -->
+                <div id="signup-alert" style="display: none; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1rem; text-align: left;"></div>
+
+                <!-- Full Name -->
+                <div class="signup-form-group">
+                    <label class="signup-label" for="fullname">FULL NAME</label>
+                    <input type="text" id="fullname" class="signup-input" placeholder="e.g. Eleanor Vance" required autocomplete="name" pattern="^[A-Za-z\s.'-]+$" title="Please enter only letters and spaces (numbers are not allowed)">
+                    <div id="fullname-feedback" style="display: none; color: #dc2626; font-size: 0.75rem; margin-top: 0.35rem; font-weight: 500;">
+                        <i class="fa-solid fa-circle-exclamation" style="margin-right: 4px;"></i> Numbers are not allowed in the Name field.
+                    </div>
+                </div>
+
+                <!-- Work Email -->
+                <div class="signup-form-group">
+                    <label class="signup-label" for="workemail">WORK EMAIL</label>
+                    <input type="email" id="workemail" class="signup-input" placeholder="name@company.com" required autocomplete="email">
+                </div>
+
+                <!-- Company / Organization -->
+                <div class="signup-form-group">
+                    <label class="signup-label" for="company">COMPANY / ORGANIZATION</label>
+                    <input type="text" id="company" class="signup-input" placeholder="e.g. Acme Capital" required>
+                </div>
+
+                <!-- Password -->
+                <div class="signup-form-group">
+                    <div class="password-label-row">
+                        <label class="signup-label" for="password" style="margin-bottom: 0;">PASSWORD</label>
+                        <span class="password-hint" id="password-hint">Min. 8 characters</span>
+                    </div>
+                    <div class="signup-input-wrap">
+                        <input type="password" id="password" class="signup-input" placeholder="••••••••••••" required autocomplete="new-password">
+                        <button type="button" class="password-toggle-btn" id="togglePassword" aria-label="Toggle password visibility">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                    <!-- 4-Segment Strength Meter -->
+                    <div class="strength-meter-row">
+                        <div class="strength-bar" id="bar-1"></div>
+                        <div class="strength-bar" id="bar-2"></div>
+                        <div class="strength-bar" id="bar-3"></div>
+                        <div class="strength-bar" id="bar-4"></div>
+                    </div>
+                </div>
+
+                <!-- Terms & Conditions Checkbox -->
+                <div class="terms-row">
+                    <input type="checkbox" id="terms" class="terms-checkbox" required>
+                    <label for="terms" class="terms-label">
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-signup-submit" id="btn-signup-submit">
+                    <span id="btn-submit-text">CREATE MANAGER ACCOUNT</span>
+                </button>
+            </form>
+
+            <!-- Sign In Footer Link -->
+            <div class="signin-prompt">
+                Already have an account? <a href="signin.html" class="signin-link">Sign In</a>
+            </div>
+        </div>
+
+        <!-- Security & Support Footer Note -->
+        <div class="signup-security-info">
+            <i class="fa-solid fa-lock security-lock-icon"></i>
+            <span>Protected with 256-bit SSL encryption.</span>
+            <span class="security-sep">•</span>
+            <span>Need support? Contact <a href="mailto:help@advisor-group.com">help@advisor-group.com</a></span>
+        </div>
+    </main>
+
+    <!-- Bottom Minimal Footer -->
+    <footer class="signup-footer">
+        <div>
+            &copy; 2024 Advisor Institutional Group. All rights reserved.
+        </div>
+        <div class="signup-footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="contact.html#network">Global Offices</a>
+            <a href="#">ESG Commitment</a>
+        </div>
+    </footer>
+
+    <!-- Form Validation & Interactive Role Registration Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const roleCards = document.querySelectorAll('.role-card');
+            const selectedRoleInput = document.getElementById('selected-role');
+            const submitBtn = document.getElementById('btn-signup-submit');
+            const submitText = document.getElementById('btn-submit-text');
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.getElementById('togglePassword');
+            const signupForm = document.getElementById('signup-form');
+            const signupAlert = document.getElementById('signup-alert');
+            const bars = [
+                document.getElementById('bar-1'),
+                document.getElementById('bar-2'),
+                document.getElementById('bar-3'),
+                document.getElementById('bar-4')
+            ];
+
+            // 1. Role Selection
+            roleCards.forEach(function (card) {
+                card.addEventListener('click', function () {
+                    roleCards.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    const role = this.getAttribute('data-role');
+                    selectedRoleInput.value = role;
+                    submitText.textContent = 'CREATE ' + role.toUpperCase() + ' ACCOUNT';
+                });
+            });
+
+            // 2. Password Visibility Toggle
+            if (toggleBtn && passwordInput) {
+                toggleBtn.addEventListener('click', function () {
+                    const isPass = passwordInput.getAttribute('type') === 'password';
+                    passwordInput.setAttribute('type', isPass ? 'text' : 'password');
+                    const icon = this.querySelector('i');
+                    if (isPass) {
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            }
+
+            // 3. Dynamic Password Strength Meter
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function () {
+                    const val = this.value;
+                    let strength = 0;
+                    if (val.length >= 8) strength++;
+                    if (val.match(/[A-Z]/)) strength++;
+                    if (val.match(/[0-9]/)) strength++;
+                    if (val.match(/[^A-Za-z0-9]/)) strength++;
+
+                    bars.forEach((bar, idx) => {
+                        if (bar) {
+                            if (idx < strength) {
+                                bar.classList.add('active');
+                                if (strength <= 1) {
+                                    bar.style.backgroundColor = '#ef4444';
+                                } else if (strength === 2) {
+                                    bar.style.backgroundColor = '#f59e0b';
+                                } else {
+                                    bar.style.backgroundColor = '#10b981';
+                                }
+                            } else {
+                                bar.classList.remove('active');
+                                bar.style.backgroundColor = '';
+                            }
+                        }
+                    });
+                });
+            }
+
+            const fullnameInput = document.getElementById('fullname');
+            const fullnameFeedback = document.getElementById('fullname-feedback');
+
+            // Name Field Validation: Strictly disallow numbers
+            if (fullnameInput) {
+                // Prevent number keystrokes
+                fullnameInput.addEventListener('keydown', function (e) {
+                    if (e.key && e.key.length === 1 && /[0-9]/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                        e.preventDefault();
+                        if (fullnameFeedback) {
+                            fullnameFeedback.style.display = 'block';
+                            clearTimeout(fullnameFeedback._timer);
+                            fullnameFeedback._timer = setTimeout(() => { fullnameFeedback.style.display = 'none'; }, 2500);
+                        }
+                    }
+                });
+
+                // Strip any numbers on input (e.g. mobile virtual keyboard, speech, autofill)
+                fullnameInput.addEventListener('input', function () {
+                    if (/[0-9]/.test(this.value)) {
+                        this.value = this.value.replace(/[0-9]/g, '');
+                        if (fullnameFeedback) {
+                            fullnameFeedback.style.display = 'block';
+                            clearTimeout(fullnameFeedback._timer);
+                            fullnameFeedback._timer = setTimeout(() => { fullnameFeedback.style.display = 'none'; }, 2500);
+                        }
+                    }
+                });
+
+                // Strip numbers on paste
+                fullnameInput.addEventListener('paste', function (e) {
+                    const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                    if (/[0-9]/.test(pasteData)) {
+                        e.preventDefault();
+                        const cleanData = pasteData.replace(/[0-9]/g, '');
+                        document.execCommand('insertText', false, cleanData);
+                        if (fullnameFeedback) {
+                            fullnameFeedback.style.display = 'block';
+                            clearTimeout(fullnameFeedback._timer);
+                            fullnameFeedback._timer = setTimeout(() => { fullnameFeedback.style.display = 'none'; }, 2500);
+                        }
+                    }
+                });
+            }
+
+            // 4. Form Submit Handler
+            if (signupForm) {
+                signupForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    signupAlert.style.display = 'none';
+
+                    const fullname = document.getElementById('fullname').value.trim();
+                    const workemail = document.getElementById('workemail').value.trim();
+                    const company = document.getElementById('company').value.trim();
+                    const password = passwordInput.value;
+                    const terms = document.getElementById('terms').checked;
+                    const role = selectedRoleInput.value || 'Manager';
+
+                    // Validation checks
+                    if (!fullname || !workemail || !company || !password) {
+                        signupAlert.style.display = 'block';
+                        signupAlert.style.background = '#fef2f2';
+                        signupAlert.style.color = '#dc2626';
+                        signupAlert.style.border = '1px solid #fecaca';
+                        signupAlert.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> Please fill in all required fields.';
+                        return;
+                    }
+
+                    if (/[0-9]/.test(fullname)) {
+                        signupAlert.style.display = 'block';
+                        signupAlert.style.background = '#fef2f2';
+                        signupAlert.style.color = '#dc2626';
+                        signupAlert.style.border = '1px solid #fecaca';
+                        signupAlert.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> Numbers are not allowed in the Name field. Please use letters only.';
+                        fullnameInput.focus();
+                        return;
+                    }
+
+                    if (password.length < 8) {
+                        signupAlert.style.display = 'block';
+                        signupAlert.style.background = '#fef2f2';
+                        signupAlert.style.color = '#dc2626';
+                        signupAlert.style.border = '1px solid #fecaca';
+                        signupAlert.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> Password must be at least 8 characters long.';
+                        return;
+                    }
+
+                    if (!terms) {
+                        signupAlert.style.display = 'block';
+                        signupAlert.style.background = '#fef2f2';
+                        signupAlert.style.color = '#dc2626';
+                        signupAlert.style.border = '1px solid #fecaca';
+                        signupAlert.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> You must agree to the Terms of Service and Privacy Policy.';
+                        return;
+                    }
+
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i> Creating ' + role + ' Account...';
+
+                    // Determine Role label
+                    let roleTitle = 'Advisory Practice Manager';
+                    if (role === 'Admin') roleTitle = 'System Administrator';
+                    if (role === 'Client') roleTitle = 'Enterprise Client';
+
+                    // Save session payload
+                    const authPayload = {
+                        role: role,
+                        email: workemail,
+                        name: fullname,
+                        company: company,
+                        roleName: roleTitle,
+                        isLoggedIn: true,
+                        loginTime: new Date().toISOString()
+                    };
+
+                    localStorage.setItem('stackly_auth', JSON.stringify(authPayload));
+
+                    // Show success & redirect
+                    setTimeout(function () {
+                        signupAlert.style.display = 'block';
+                        signupAlert.style.background = '#ecfdf5';
+                        signupAlert.style.color = '#047857';
+                        signupAlert.style.border = '1px solid #a7f3d0';
+                        signupAlert.innerHTML = '<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i> Account successfully created! Opening ' + role + ' Dashboard...';
+
+                        setTimeout(function () {
+                            window.location.href = 'dashboard.html';
+                        }, 800);
+                    }, 600);
+                });
+            }
+        });
+    </script>
+    <!-- Global Button Redirection Handler -->
+    <script src="js/main.js"></script>
+</body>
+</html>

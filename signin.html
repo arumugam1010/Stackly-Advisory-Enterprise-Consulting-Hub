@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Client Portal | Stackly</title>
+    <meta name="description" content="Enter your email and password to access your secure Stackly client account.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page">
+
+    <!-- Header Navigation -->
+    <header class="signin-navbar">
+        <div class="signin-logo">
+            <a href="index.html" style="display: flex; align-items: center;">
+                <img src="assets/logo-stackly.webp" alt="Stackly Logo">
+            </a>
+        </div>
+        <div class="signin-nav-right">
+          
+            <a href="404.html" class="signin-nav-link">Need help?</a>
+        </div>
+    </header>
+
+    <!-- Main Authentication Viewport -->
+    <main class="signin-main">
+        <!-- Sign In Card -->
+        <div class="signin-card">
+            <h1 class="signin-title">Sign In</h1>
+            <p class="signin-subtitle">Enter your email and password to access your client account.</p>
+
+            <!-- Signin Error Alert Banner -->
+            <div class="auth-alert" id="auth-alert" style="display: none;"></div>
+
+            <form id="signin-form" novalidate>
+                <!-- Role Selection -->
+                <div class="signin-form-group">
+                    <label class="signin-label">SELECT ACCESS ROLE</label>
+                    <div class="role-selector-grid" id="role-selector">
+                        <div class="role-card" data-role="Admin" tabindex="0">
+                            <i class="fa-solid fa-user-shield role-icon"></i>
+                            <span class="role-name">Admin</span>
+                            <span class="role-desc">System Oversight</span>
+                        </div>
+                        <div class="role-card active" data-role="Manager" tabindex="0">
+                            <i class="fa-solid fa-briefcase role-icon"></i>
+                            <span class="role-name">Manager</span>
+                            <span class="role-desc">Practice Lead</span>
+                        </div>
+                        <div class="role-card" data-role="Client" tabindex="0">
+                            <i class="fa-solid fa-building-user role-icon"></i>
+                            <span class="role-name">Client</span>
+                            <span class="role-desc">Enterprise Partner</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="selected-role" name="role" value="Manager">
+                </div>
+
+                <!-- Email Address -->
+                <div class="signin-form-group">
+                    <label class="signin-label" for="email">EMAIL ADDRESS</label>
+                    <input type="email" id="email" class="signin-input" placeholder="name@company.com" required autocomplete="email">
+                    <div class="field-feedback" id="email-feedback"></div>
+                </div>
+
+                <!-- Password -->
+                <div class="signin-form-group">
+                    <div class="password-label-row">
+                        <label class="signin-label" for="password" style="margin-bottom: 0;">PASSWORD</label>
+                        <a href="404.html" class="forgot-password-link">Forgot password?</a>
+                    </div>
+                    <div class="password-input-wrap">
+                        <input type="password" id="password" class="signin-input" placeholder="••••••••••••" required autocomplete="current-password">
+                        <button type="button" class="password-toggle-btn" id="togglePasswordSignin" aria-label="Toggle password visibility">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <!-- Password Requirement Live Checklist -->
+                    <div class="password-criteria-box">
+                        <div class="criteria-header">PASSWORD REQUIREMENTS</div>
+                        <div class="password-criteria-grid">
+                            <div class="criteria-item" id="crit-len">
+                                <i class="fa-regular fa-circle"></i>
+                                <span>8+ characters</span>
+                            </div>
+                            <div class="criteria-item" id="crit-upper">
+                                <i class="fa-regular fa-circle"></i>
+                                <span>Uppercase (A-Z)</span>
+                            </div>
+                            <div class="criteria-item" id="crit-lower">
+                                <i class="fa-regular fa-circle"></i>
+                                <span>Lowercase (a-z)</span>
+                            </div>
+                            <div class="criteria-item" id="crit-num">
+                                <i class="fa-regular fa-circle"></i>
+                                <span>Number (0-9)</span>
+                            </div>
+                            <div class="criteria-item" id="crit-sym">
+                                <i class="fa-regular fa-circle"></i>
+                                <span>Symbol (!@#$...)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field-feedback" id="password-feedback"></div>
+                </div>
+
+                <!-- Remember Me Checkbox -->
+                <div class="remember-row">
+                    <input type="checkbox" id="remember" class="remember-checkbox" checked>
+                    <label for="remember" class="remember-label">Keep me authenticated for 30 days</label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-signin-submit" id="btn-signin-submit">
+                    <span id="btn-submit-text">ENTER SECURE DASHBOARD</span>
+                    <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+                </button>
+            </form>
+
+            <!-- Social Divider -->
+            <div class="signin-divider">
+                <span>or continue with</span>
+            </div>
+
+            <!-- Social Logins (Google & Microsoft) -->
+            <div class="social-buttons-grid">
+                <!-- Google Button -->
+                <a href="404.html" class="btn-social" aria-label="Sign in with Google">
+                    <svg class="social-icon-svg" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.24v3.15C3.26 21.36 7.33 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.24C.45 8.15 0 9.92 0 12s.45 3.85 1.24 5.42l4.04-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.24 6.58l4.04 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                    </svg>
+                    <span>Google</span>
+                </a>
+
+                <!-- Microsoft Button -->
+                <a href="404.html" class="btn-social" aria-label="Sign in with Microsoft">
+                    <svg class="social-icon-svg" viewBox="0 0 21 21">
+                        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                    </svg>
+                    <span>Microsoft</span>
+                </a>
+            </div>
+
+            <!-- Sign Up Footer -->
+            <div class="signup-prompt">
+                Don't have an account? <a href="signup.html" class="signup-link">Sign Up</a>
+            </div>
+
+            <!-- Back to Home Action Button -->
+            <div class="card-back-home-wrapper">
+                <a href="index.html" class="btn-card-back-home" id="card-back-to-home">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Back to Home</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Security & Support Footer Note -->
+        <div class="signin-security-info">
+            <div class="security-badge-line">
+                <i class="fa-solid fa-lock"></i>
+                <span>Protected with 256-bit SSL encryption.</span>
+            </div>
+            <div class="support-contact-line">
+                Need support? Contact <a href="mailto:help@Stackly-group.com">help@Stackly-group.com</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Minimal Footer -->
+    <footer class="signin-footer">
+        <div>
+            &copy; 2024 Advisor Institutional Group. All rights reserved.
+        </div>
+        <div class="signin-footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="contact.html#network">Global Offices</a>
+            <a href="#">ESG Commitment</a>
+        </div>
+    </footer>
+    <!-- Global Button Redirection Handler -->
+    <script src="js/main.js"></script>
+
+    <!-- Sign In Validation & Role Authentication Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('signin-form');
+            const roleCards = document.querySelectorAll('.role-card');
+            const selectedRoleInput = document.getElementById('selected-role');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const emailFeedback = document.getElementById('email-feedback');
+            const passwordFeedback = document.getElementById('password-feedback');
+            const authAlert = document.getElementById('auth-alert');
+            const submitBtn = document.getElementById('btn-signin-submit');
+            const submitText = document.getElementById('btn-submit-text');
+            const togglePasswordBtn = document.getElementById('togglePasswordSignin');
+
+            // 1. Role Selection
+            roleCards.forEach(function (card) {
+                card.addEventListener('click', function () {
+                    roleCards.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    const role = this.getAttribute('data-role');
+                    selectedRoleInput.value = role;
+                    submitText.textContent = 'ENTER ' + role.toUpperCase() + ' DASHBOARD';
+                });
+            });
+
+            // 2. Password Visibility Toggle
+            if (togglePasswordBtn) {
+                togglePasswordBtn.addEventListener('click', function () {
+                    const isPass = passwordInput.type === 'password';
+                    passwordInput.type = isPass ? 'text' : 'password';
+                    const icon = this.querySelector('i');
+                    if (isPass) {
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            }
+
+            // 3. Real-Time Password Criteria Validation
+            const critLen = document.getElementById('crit-len');
+            const critUpper = document.getElementById('crit-upper');
+            const critLower = document.getElementById('crit-lower');
+            const critNum = document.getElementById('crit-num');
+            const critSym = document.getElementById('crit-sym');
+
+            function updateCriteria(element, isValid) {
+                const icon = element.querySelector('i');
+                if (isValid) {
+                    element.classList.add('valid');
+                    icon.className = 'fa-solid fa-circle-check';
+                } else {
+                    element.classList.remove('valid');
+                    icon.className = 'fa-regular fa-circle';
+                }
+            }
+
+            function validatePassword(val) {
+                const hasLen = val.length >= 8;
+                const hasUpper = /[A-Z]/.test(val);
+                const hasLower = /[a-z]/.test(val);
+                const hasNum = /[0-9]/.test(val);
+                const hasSym = /[^A-Za-z0-9]/.test(val);
+
+                updateCriteria(critLen, hasLen);
+                updateCriteria(critUpper, hasUpper);
+                updateCriteria(critLower, hasLower);
+                updateCriteria(critNum, hasNum);
+                updateCriteria(critSym, hasSym);
+
+                return hasLen && hasUpper && hasLower && hasNum && hasSym;
+            }
+
+            passwordInput.addEventListener('input', function () {
+                const isPassValid = validatePassword(this.value);
+                if (isPassValid) {
+                    passwordFeedback.textContent = '';
+                    passwordFeedback.className = 'field-feedback';
+                    this.classList.remove('input-invalid');
+                    this.classList.add('input-valid');
+                }
+            });
+
+            // 4. Real-Time Email Validation
+            function isValidEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            emailInput.addEventListener('input', function () {
+                if (isValidEmail(this.value.trim())) {
+                    emailFeedback.textContent = '';
+                    emailFeedback.className = 'field-feedback';
+                    this.classList.remove('input-invalid');
+                    this.classList.add('input-valid');
+                }
+            });
+
+            // 5. Form Submit Validation & Role Redirection
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                const role = selectedRoleInput.value || 'Manager';
+
+                let valid = true;
+
+                // Validate Email
+                if (!email) {
+                    emailFeedback.textContent = 'Email address is required.';
+                    emailFeedback.className = 'field-feedback error';
+                    emailInput.classList.add('input-invalid');
+                    valid = false;
+                } else if (!isValidEmail(email)) {
+                    emailFeedback.textContent = 'Please enter a valid institutional email (e.g. name@company.com).';
+                    emailFeedback.className = 'field-feedback error';
+                    emailInput.classList.add('input-invalid');
+                    valid = false;
+                } else {
+                    emailFeedback.textContent = '';
+                    emailFeedback.className = 'field-feedback';
+                    emailInput.classList.remove('input-invalid');
+                }
+
+                // Validate Password
+                const isPassValid = validatePassword(password);
+                if (!password) {
+                    passwordFeedback.textContent = 'Password is required.';
+                    passwordFeedback.className = 'field-feedback error';
+                    passwordInput.classList.add('input-invalid');
+                    valid = false;
+                } else if (!isPassValid) {
+                    passwordFeedback.textContent = 'Password must meet all 5 requirements above (8+ characters, uppercase, lowercase, number, symbol).';
+                    passwordFeedback.className = 'field-feedback error';
+                    passwordInput.classList.add('input-invalid');
+                    valid = false;
+                } else {
+                    passwordFeedback.textContent = '';
+                    passwordFeedback.className = 'field-feedback';
+                    passwordInput.classList.remove('input-invalid');
+                }
+
+                if (!valid) {
+                    authAlert.style.display = 'flex';
+                    authAlert.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i><span>Please address the validation requirements highlighted above to proceed.</span>';
+                    return;
+                }
+
+                // Authentication Success: Store session in localStorage
+                authAlert.style.display = 'none';
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i> Authenticating ' + role + ' Credentials...';
+
+                const authPayload = {
+                    email: email,
+                    role: role,
+                    isLoggedIn: true,
+                    loginTime: new Date().toISOString(),
+                    displayName: email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                };
+
+                localStorage.setItem('stackly_auth', JSON.stringify(authPayload));
+
+                // Quick visual feedback before seamless redirect
+                setTimeout(function () {
+                    window.location.href = 'dashboard.html';
+                }, 400);
+            });
+        });
+    </script>
+</body>
+</html>

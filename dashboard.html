@@ -1,0 +1,2414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Dashboard | Stackly Advisory</title>
+    <meta name="description" content="Secure institutional executive client portal and practice management dashboard.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- Dashboard App Layout -->
+    <div class="dash-layout">
+
+        <!-- Off-Canvas / Desktop Left Sidebar -->
+        <aside class="dash-sidebar" id="dash-sidebar">
+            <div class="dash-sidebar-header">
+                <div class="sidebar-brand-group">
+                    <a href="javascript:void(0)" class="sidebar-brand-logo brand-home-link" title="Dashboard Home">
+                        <img src="assets/logo-stackly.webp" alt="Stackly Logo">
+                    </a>
+                    <span class="dash-role-pill" id="sidebar-role-badge">MANAGER</span>
+                </div>
+                <button class="dash-sidebar-close" id="sidebar-close-btn" aria-label="Close Navigation">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Dynamic 10-Item Navigation Container -->
+            <nav class="dash-nav-menu" aria-label="Dashboard Navigation">
+                <ul class="dash-nav-list" id="sidebar-nav-list">
+                    <!-- Populated dynamically via JavaScript for Admin, Manager, or Client -->
+                </ul>
+            </nav>
+
+            <div class="dash-sidebar-footer">
+                <div class="sidebar-security-note">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>256-Bit SSL Encrypted Session</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area: Topbar + Viewport -->
+        <div class="dash-main-area">
+            <!-- Dashboard Top Bar -->
+            <header class="dash-topbar">
+                <div class="dash-topbar-left">
+                    <button class="dash-menu-toggle" id="dashboard-menu-toggle" aria-label="Toggle Navigation Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <a href="javascript:void(0)" class="dash-brand-logo mobile-only-logo brand-home-link" title="Dashboard Home">
+                        <img src="assets/logo-stackly.webp" alt="Stackly Logo">
+                    </a>
+                    <div class="dash-topbar-context">
+                        <span class="dash-context-tag"><i class="fa-solid fa-circle pulse-dot"></i> Live Platform System</span>
+                    </div>
+                </div>
+
+                <div class="dash-topbar-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search accounts, sovereign nodes, vaults, audits (Ctrl+K)...">
+                    <span class="dash-search-kbd">⌘K</span>
+                </div>
+
+                <div class="dash-topbar-right">
+                    <div class="dash-topbar-actions">
+                        <button class="dash-icon-btn" title="Platform Notifications" aria-label="Notifications">
+                            <i class="fa-regular fa-bell"></i>
+                            <span class="dash-icon-badge">3</span>
+                        </button>
+                        <button class="dash-icon-btn" title="Audit Telemetry Status" aria-label="Security Status">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </button>
+                    </div>
+                    <div class="dash-user-profile">
+                        <div class="dash-avatar" id="topbar-avatar">M</div>
+                        <div class="dash-user-meta">
+                            <span class="dash-user-name" id="topbar-user-name">Advisor Member</span>
+                            <span class="dash-user-role-label" id="topbar-role-label">Practice Manager</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Viewport Content Area -->
+            <main class="dash-viewport">
+                <div class="dash-viewport-container" id="dash-viewport-container">
+                    <!-- Dynamically rendered specialized content for each page -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Session Guard Check
+            const authDataStr = localStorage.getItem('stackly_auth');
+            if (!authDataStr) {
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            let auth;
+            try {
+                auth = JSON.parse(authDataStr);
+                if (!auth || !auth.isLoggedIn) {
+                    window.location.href = 'signin.html';
+                    return;
+                }
+            } catch (e) {
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            const currentRole = auth.role || 'Manager';
+            const currentEmail = auth.email || 'user@stackly-group.com';
+            const displayName = auth.displayName || currentEmail.split('@')[0].toUpperCase();
+
+            // 2. Update Topbar & Sidebar Profile Details
+            const roleBadge = document.getElementById('topbar-role-badge');
+            const sidebarRoleBadge = document.getElementById('sidebar-role-badge');
+            const roleLabel = document.getElementById('topbar-role-label');
+            const userNameEl = document.getElementById('topbar-user-name');
+            const avatarEl = document.getElementById('topbar-avatar');
+
+            if (roleBadge) roleBadge.textContent = currentRole.toUpperCase();
+            if (sidebarRoleBadge) sidebarRoleBadge.textContent = currentRole.toUpperCase();
+            roleLabel.textContent = currentRole === 'Admin' ? 'System Administrator' : (currentRole === 'Client' ? 'Institutional Client' : 'Advisory Practice Manager');
+            userNameEl.textContent = displayName;
+            avatarEl.textContent = currentRole.charAt(0).toUpperCase();
+
+            const viewportContainer = document.getElementById('dash-viewport-container');
+
+            // Helper to render KPI cards HTML
+            function renderKPIs(kpis) {
+                return `
+                    <div class="dash-kpi-grid">
+                        ${kpis.map(k => `
+                            <div class="dash-kpi-card">
+                                <div class="kpi-top">
+                                    <span class="kpi-label">${k.label}</span>
+                                    <i class="fa-solid ${k.icon} kpi-icon"></i>
+                                </div>
+                                <div class="kpi-val">${k.val}</div>
+                                <div class="kpi-trend ${k.positive ? 'positive' : 'neutral'}">
+                                    <i class="fa-solid ${k.positive ? 'fa-arrow-trend-up' : 'fa-signal'}"></i>
+                                    ${k.trend}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Helper to render Banner HTML
+            function renderBanner(eyebrow, title, desc, btn1Text, btn2Text, btn1Icon = 'fa-file-arrow-down', btn2Icon = 'fa-arrows-rotate') {
+                return `
+                    <div class="dash-welcome-banner">
+                        <div class="banner-text">
+                            <div class="banner-eyebrow">
+                                <span class="status-pulse-green"></span>
+                                <span>${eyebrow}</span>
+                                <span class="sep-dot">&bull;</span>
+                                <span>LIVE ACTIVE SESSION</span>
+                            </div>
+                            <h1 class="banner-title">${title}</h1>
+                            <p class="banner-sub">${desc}</p>
+                        </div>
+                        <div class="banner-actions">
+                            <button type="button" class="btn btn-dash-primary">
+                                <i class="fa-solid ${btn1Icon}"></i>
+                                <span>${btn1Text}</span>
+                            </button>
+                            <button type="button" class="btn btn-dash-secondary">
+                                <i class="fa-solid ${btn2Icon}"></i>
+                                <span>${btn2Text}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Helper to render Table HTML
+            function renderTableCard(title, sub, headers, rows, filterText = 'Filter', newText = 'New Entry') {
+                return `
+                    <div class="dash-card">
+                        <div class="dash-card-header">
+                            <div>
+                                <h3 class="dash-card-title">${title}</h3>
+                                <p class="dash-card-sub">${sub}</p>
+                            </div>
+                            <div class="dash-card-actions">
+                                <button type="button" class="btn-card-action"><i class="fa-solid fa-filter"></i> ${filterText}</button>
+                                <button type="button" class="btn-card-action"><i class="fa-solid fa-plus"></i> ${newText}</button>
+                            </div>
+                        </div>
+                        <div class="dash-table-wrap">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+                                </thead>
+                                <tbody>
+                                    ${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 3. Unique Renderers for 10 Admin Channels
+            const adminViews = {
+                'admin-overview': function () {
+                    return `
+                        ${renderBanner('ENTERPRISE SYSTEM ADMINISTRATOR', 'Executive Overview & Fiduciary Health', 'Global multi-tenant governance, encrypted fiduciary vault audits, and infrastructure status across all operational hubs.', 'Export Executive Briefing', 'Initiate Audit Sync')}
+                        ${renderKPIs([
+                            { label: 'TOTAL ASSETS UNDER ADVISORY', val: '$4.82B', icon: 'fa-building-columns', trend: '+14.2% YoY Growth', positive: true },
+                            { label: 'ACTIVE ENTERPRISE CLIENTS', val: '142 Entities', icon: 'fa-users', trend: '100% Verified Fiduciary', positive: true },
+                            { label: 'SECURITY & AUDIT COMPLIANCE', val: '99.98%', icon: 'fa-shield-halved', trend: 'Zero Infractions Logged', positive: true },
+                            { label: 'GLOBAL OFFICES MONITORED', val: '4 Major Hubs', icon: 'fa-globe', trend: 'NY, London, Zurich, SG', positive: false }
+                        ])}
+                        <div class="dash-content-grid">
+                            <div class="dash-main-col">
+                                <div class="dash-card">
+                                    <div class="dash-card-header">
+                                        <div>
+                                            <h3 class="dash-card-title">Global Capital Allocation by Region</h3>
+                                            <p class="dash-card-sub">Active institutional fiduciary assets partitioned across jurisdictions</p>
+                                        </div>
+                                        <span class="badge-status-green">$4.82B CONSOLIDATED</span>
+                                    </div>
+                                    <div style="margin: 1rem 0;">
+                                        <div style="display: flex; height: 16px; border-radius: 9999px; overflow: hidden; margin-bottom: 1rem;">
+                                            <div style="width: 38%; background: #2563eb;" title="Americas: $1.82B (38%)"></div>
+                                            <div style="width: 26%; background: #0ea5e9;" title="EMEA: £1.24B (26%)"></div>
+                                            <div style="width: 21%; background: #10b981;" title="Swiss: €1.10B (21%)"></div>
+                                            <div style="width: 15%; background: #f59e0b;" title="APAC: $720M (15%)"></div>
+                                        </div>
+                                        <div class="capital-allocation-grid">
+                                            <div style="padding: 0.5rem; background: #eff6ff; border-radius: 6px;">
+                                                <span style="font-size: 0.7rem; color: #1e40af; font-weight: 700; display: block;">AMERICAS (NY)</span>
+                                                <strong style="font-size: 1rem; color: #0f172a;">$1.82B (38%)</strong>
+                                            </div>
+                                            <div style="padding: 0.5rem; background: #f0f9ff; border-radius: 6px;">
+                                                <span style="font-size: 0.7rem; color: #0369a1; font-weight: 700; display: block;">EMEA (LONDON)</span>
+                                                <strong style="font-size: 1rem; color: #0f172a;">£1.24B (26%)</strong>
+                                            </div>
+                                            <div style="padding: 0.5rem; background: #ecfdf5; border-radius: 6px;">
+                                                <span style="font-size: 0.7rem; color: #047857; font-weight: 700; display: block;">SWISS (ZURICH)</span>
+                                                <strong style="font-size: 1rem; color: #0f172a;">€1.10B (21%)</strong>
+                                            </div>
+                                            <div style="padding: 0.5rem; background: #fefce8; border-radius: 6px;">
+                                                <span style="font-size: 0.7rem; color: #a16207; font-weight: 700; display: block;">APAC (SG)</span>
+                                                <strong style="font-size: 1rem; color: #0f172a;">$720M (15%)</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                ${renderTableCard('Global Multi-Tenant Nodes & Infrastructure Health', 'Continuous monitoring of sovereign repositories and regional database nodes',
+                                    ['TENANT / NODE', 'JURISDICTION', 'AUM / VOLUME', 'ENCRYPTION CIPHER', 'NODE LATENCY', 'ACTIONS'],
+                                    [
+                                        ['<strong>Blackstone Sovereign Core</strong>', 'New York (US-East)', '$1.45B', '<span class="badge-status-green">AES-256-GCM</span>', '8 ms', '<button class="table-btn">Inspect Node</button>'],
+                                        ['<strong>Zurich Private Wealth S.A.</strong>', 'Zurich (CH-Central)', '€890M', '<span class="badge-status-green">AES-256-GCM</span>', '12 ms', '<button class="table-btn">Inspect Node</button>'],
+                                        ['<strong>Aethelgard Holdings PLC</strong>', 'London (EU-West)', '£640M', '<span class="badge-status-green">AES-256-GCM</span>', '14 ms', '<button class="table-btn">Inspect Node</button>'],
+                                        ['<strong>Pacific Rim Sovereign Fund</strong>', 'Singapore (AP-South)', '$1.84B', '<span class="badge-status-green">ChaCha20-Poly1305</span>', '22 ms', '<button class="table-btn">Inspect Node</button>']
+                                    ]
+                                )}
+                            </div>
+                            <div class="dash-side-col">
+                                <div class="dash-card">
+                                    <div class="dash-card-header"><h3 class="dash-card-title">Fiduciary Security Radar</h3><span class="badge-status-green">AUDITED</span></div>
+                                    <div class="compliance-metric-box">
+                                        <div class="compliance-ring-wrap"><div class="compliance-val">99.8%</div><div class="compliance-sub">Rating</div></div>
+                                        <div class="compliance-details">
+                                            <div class="comp-row"><span>Data Encryption</span><strong>AES-256 GCM</strong></div>
+                                            <div class="comp-row"><span>SOC 2 Type II</span><strong>Attested (2026)</strong></div>
+                                            <div class="comp-row"><span>Hardware HSM</span><strong>Active Dual Cluster</strong></div>
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">
+                                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-check" style="color: #10b981; margin-top: 2px;"></i><span>No zero-day vulnerabilities detected across sovereign nodes.</span></div>
+                                        <div style="display: flex; gap: 0.5rem;"><i class="fa-solid fa-circle-check" style="color: #10b981; margin-top: 2px;"></i><span>Key rotation cycle currently active. Next rotation in 26 days.</span></div>
+                                    </div>
+                                    <button type="button" class="btn btn-block-action"><i class="fa-solid fa-fingerprint"></i><span>Inspect Security Telemetry</span></button>
+                                </div>
+
+                                <!-- Live Sovereign Cluster Telemetry -->
+                                <div class="dash-card">
+                                    <div class="dash-card-header">
+                                        <div>
+                                            <h3 class="dash-card-title">Sovereign Cluster Telemetry</h3>
+                                            <p class="dash-card-sub" style="margin-bottom: 0;">Multi-jurisdiction node sync & latency</p>
+                                        </div>
+                                        <span class="badge-status-green"><i class="fa-solid fa-signal pulse-dot" style="margin-right: 4px;"></i>4 NODES</span>
+                                    </div>
+                                    <div class="telemetry-node-list" style="margin-top: 0.75rem;">
+                                        <div class="telemetry-node-row">
+                                            <div class="telemetry-node-info">
+                                                <div class="node-status-dot online"></div>
+                                                <div>
+                                                    <strong>US-East (New York Core)</strong>
+                                                    <span>Cluster Primary • Node NY-01</span>
+                                                </div>
+                                            </div>
+                                            <div class="telemetry-node-metrics">
+                                                <span class="latency-pill"><i class="fa-solid fa-bolt"></i> 8 ms</span>
+                                                <span class="uptime-label">99.99%</span>
+                                            </div>
+                                        </div>
+                                
+                                    
+                                    </div>
+                                    <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid #e2e8f0;">
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #64748b; margin-bottom: 0.4rem;">
+                                            <span>Cryptographic Cluster Load</span>
+                                            <strong style="color: #0f172a;">34.2% Capacity</strong>
+                                        </div>
+                                        <div style="background: #f1f5f9; height: 6px; border-radius: 999px; overflow: hidden; display: flex;">
+                                            <div style="width: 20%; background: #0284c7;" title="US-East: 20%"></div>
+                                            <div style="width: 9%; background: #10b981;" title="CH-Central: 9%"></div>
+                                            <div style="width: 5.2%; background: #f59e0b;" title="Others: 5.2%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+             
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'admin-users': function () {
+                    return `
+                        ${renderBanner('RBAC IDENTITY GOVERNANCE', 'Enterprise User & Role Management Directory', 'Provision corporate credentials, multi-factor hardware enforcement, and privilege tier audits for all institutional personnel.', 'Provision Enterprise User', 'Export Permission Matrix', 'fa-user-plus', 'fa-file-export')}
+                        
+                        <!-- Filter Chips & Search Bar -->
+                        <div class="dash-card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                    <button type="button" class="btn-card-action" style="background: #0f172a; color: #fff; border-color: #0f172a;"><i class="fa-solid fa-users"></i> All Accounts (1,248)</button>
+                                    <button type="button" class="btn-card-action"><i class="fa-solid fa-user-shield"></i> Admins (8)</button>
+                                    <button type="button" class="btn-card-action"><i class="fa-solid fa-briefcase"></i> Managers (46)</button>
+                                    <button type="button" class="btn-card-action"><i class="fa-solid fa-building-user"></i> Clients (1,194)</button>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="text" class="dash-input" placeholder="Search user, entity, email..." style="width: 220px; padding: 0.45rem 0.75rem;">
+                                    <button type="button" class="btn-dash-primary" style="padding: 0.45rem 0.85rem; font-size: 0.8rem;"><i class="fa-solid fa-magnifying-glass"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User Directory Cards Grid -->
+                        <div class="user-cards-grid">
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #4338ca 0%, #3b82f6 100%);">EV</div>
+                                        <div class="user-card-info">
+                                            <h4>Eleanor Vance</h4>
+                                            <span>e.vance@stackly-group.com</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-blue">ADMIN</span>
+                                        <span class="badge-status-green">TIER 1 (ROOT)</span>
+                                        <span class="dash-card-badge">YUBIKEY 5 NFC</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Stationed Hub:</span><strong>Zurich Cluster</strong></div>
+                                    <div class="user-card-meta-row"><span>Last Active:</span><strong>10 mins ago</strong></div>
+                                    <div class="user-card-meta-row"><span>Clearance:</span><strong>Unrestricted Fiduciary</strong></div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <button type="button" class="table-btn" style="flex: 1;"><i class="fa-solid fa-sliders"></i> Privileges</button>
+                                    <button type="button" class="table-btn" style="color: #dc2626;"><i class="fa-solid fa-lock"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);">JS</div>
+                                        <div class="user-card-info">
+                                            <h4>Julian Sterling</h4>
+                                            <span>j.sterling@stackly-group.com</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-blue">MANAGER</span>
+                                        <span class="badge-status-blue">TIER 2 (PRACTICE)</span>
+                                        <span class="dash-card-badge">AUTHENTICATOR APP</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Stationed Hub:</span><strong>London Financial City</strong></div>
+                                    <div class="user-card-meta-row"><span>Last Active:</span><strong>1 hour ago</strong></div>
+                                    <div class="user-card-meta-row"><span>Clearance:</span><strong>Cross-Border M&A Lead</strong></div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <button type="button" class="table-btn" style="flex: 1;"><i class="fa-solid fa-sliders"></i> Privileges</button>
+                                    <button type="button" class="table-btn" style="color: #dc2626;"><i class="fa-solid fa-lock"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">MC</div>
+                                        <div class="user-card-info">
+                                            <h4>Marcus Chen</h4>
+                                            <span>m.chen@blackstone-sov.com</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-green">CLIENT</span>
+                                        <span class="badge-status-green">TIER 3 (PORTAL)</span>
+                                        <span class="dash-card-badge">SAML 2.0 OKTA SSO</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Client Entity:</span><strong>Blackstone Sovereign</strong></div>
+                                    <div class="user-card-meta-row"><span>Last Active:</span><strong>3 hours ago</strong></div>
+                                    <div class="user-card-meta-row"><span>Clearance:</span><strong>Authorized Signatory</strong></div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <button type="button" class="table-btn" style="flex: 1;"><i class="fa-solid fa-sliders"></i> Privileges</button>
+                                    <button type="button" class="table-btn" style="color: #dc2626;"><i class="fa-solid fa-lock"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">SA</div>
+                                        <div class="user-card-info">
+                                            <h4>Sarah Al-Hassan</h4>
+                                            <span>s.hassan@sovereign.ae</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-green">CLIENT</span>
+                                        <span class="badge-status-green">TIER 3 (PORTAL)</span>
+                                        <span class="dash-card-badge">WEBAUTHN PASSKEY</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Client Entity:</span><strong>Abu Dhabi Sovereign</strong></div>
+                                    <div class="user-card-meta-row"><span>Last Active:</span><strong>Yesterday, 18:40</strong></div>
+                                    <div class="user-card-meta-row"><span>Clearance:</span><strong>Treasury Committee</strong></div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <button type="button" class="table-btn" style="flex: 1;"><i class="fa-solid fa-sliders"></i> Privileges</button>
+                                    <button type="button" class="table-btn" style="color: #dc2626;"><i class="fa-solid fa-lock"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);">HL</div>
+                                        <div class="user-card-info">
+                                            <h4>Henrik Lindqvist</h4>
+                                            <span>h.lindqvist@stackly-group.com</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-blue">MANAGER</span>
+                                        <span class="badge-status-blue">TIER 2 (PRACTICE)</span>
+                                        <span class="dash-card-badge">YUBIKEY 5 NFC</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Stationed Hub:</span><strong>Zurich Private Wealth</strong></div>
+                                    <div class="user-card-meta-row"><span>Last Active:</span><strong>2 hours ago</strong></div>
+                                    <div class="user-card-meta-row"><span>Clearance:</span><strong>Swiss Fiduciary Signoff</strong></div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <button type="button" class="table-btn" style="flex: 1;"><i class="fa-solid fa-sliders"></i> Privileges</button>
+                                    <button type="button" class="table-btn" style="color: #dc2626;"><i class="fa-solid fa-lock"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);">ER</div>
+                                        <div class="user-card-info">
+                                            <h4>Elena Rostova</h4>
+                                            <span>e.rostova@stackly-group.com</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-blue">MANAGER</span>
+                                        <span class="badge-status-blue">TIER 2 (PRACTICE)</span>
+                                        <span class="dash-card-badge">AUTHENTICATOR APP</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Stationed Hub:</span><strong>New York Americas HQ</strong></div>
+                                    <div class="user-card-meta-row"><span>Last Active:</span><strong>4 hours ago</strong></div>
+                                    <div class="user-card-meta-row"><span>Clearance:</span><strong>Lead Financial Analyst</strong></div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <button type="button" class="table-btn" style="flex: 1;"><i class="fa-solid fa-sliders"></i> Privileges</button>
+                                    <button type="button" class="table-btn" style="color: #dc2626;"><i class="fa-solid fa-lock"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Role Privilege Access Matrix Table -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Role Clearance & Privilege Grant Matrix</h3>
+                                    <p class="dash-card-sub">Cryptographic enforcement of capabilities across system tiers</p>
+                                </div>
+                                <button type="button" class="btn-card-action"><i class="fa-solid fa-shield-halved"></i> Audit Policy</button>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead>
+                                        <tr>
+                                            <th>GOVERNANCE CAPABILITY / SCOPE</th>
+                                            <th>ADMIN (TIER 1 - ROOT)</th>
+                                            <th>MANAGER (TIER 2 - PRACTICE)</th>
+                                            <th>CLIENT (TIER 3 - PORTAL)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>HSM Master Key Rotation & Cryptographic Root</strong></td>
+                                            <td><span class="badge-status-green"><i class="fa-solid fa-check"></i> FULL DISCRETION</span></td>
+                                            <td><span class="badge-status-blue"><i class="fa-solid fa-xmark"></i> RESTRICTED</span></td>
+                                            <td><span class="badge-status-blue"><i class="fa-solid fa-xmark"></i> RESTRICTED</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Virtual Data Room (VDR) & Deal Room Deployment</strong></td>
+                                            <td><span class="badge-status-green"><i class="fa-solid fa-check"></i> PROVISION & AUDIT</span></td>
+                                            <td><span class="badge-status-green"><i class="fa-solid fa-check"></i> CREATE & MANAGE</span></td>
+                                            <td><span class="badge-status-blue"><i class="fa-solid fa-eye"></i> READ & SIGN ONLY</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Fiduciary Retainer & Escrow Disbursement Authorization</strong></td>
+                                            <td><span class="badge-status-green"><i class="fa-solid fa-check"></i> DUAL-KEY RATIFY</span></td>
+                                            <td><span class="badge-status-green"><i class="fa-solid fa-check"></i> INITIATE REQUEST</span></td>
+                                            <td><span class="badge-status-blue"><i class="fa-solid fa-eye"></i> VIEW STATEMENTS</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Practitioner Staff Allocations & SOW Scope Revisions</strong></td>
+                                            <td><span class="badge-status-green"><i class="fa-solid fa-check"></i> MASTER OVERRIDE</span></td>
+                                            <td><span class="badge-status-green"><i class="fa-solid fa-check"></i> FULL CONTROL</span></td>
+                                            <td><span class="badge-status-blue"><i class="fa-solid fa-xmark"></i> RESTRICTED</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Classified Board Presentations & Fiduciary Dossiers</strong></td>
+                                            <td><span class="badge-status-green"><i class="fa-solid fa-check"></i> MASTER VAULT AUDIT</span></td>
+                                            <td><span class="badge-status-green"><i class="fa-solid fa-check"></i> AUTHOR & PUBLISH</span></td>
+                                            <td><span class="badge-status-green"><i class="fa-solid fa-check"></i> ENCRYPTED ACCESS</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'admin-security': function () {
+                    return `
+                        ${renderBanner('CRYPTOGRAPHIC AUDIT DESK', 'Fiduciary Vault Cryptography & Security Architecture', 'Hardware Security Module (HSM) cluster telemetry, AES-256 GCM key schedules, and intrusion prevention logs.', 'Rotate Master Keys', 'Export Audit Bundle', 'fa-key', 'fa-shield-halved')}
+                        ${renderKPIs([
+                            { label: 'HSM HARDWARE STATUS', val: '100% Operational', icon: 'fa-server', trend: 'Dual Cluster Synchronized', positive: true },
+                            { label: 'LAST KEY ROTATION', val: '4 Days Ago', icon: 'fa-key', trend: 'Automated 30-Day Cycle', positive: true },
+                            { label: 'FAILED AUTH ATTEMPTS', val: '0 Infractions', icon: 'fa-lock', trend: 'Zero Unauthorized Incursions', positive: true },
+                            { label: 'TLS CIPHER STRENGTH', val: 'TLS 1.3 Strict', icon: 'fa-fingerprint', trend: 'ECDHE-RSA-AES256-GCM', positive: true }
+                        ])}
+
+                        <!-- Visual 4-Step Key Lifecycle Pipeline -->
+                        <div class="dash-card" style="margin-bottom: 2rem;">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Cryptographic Key Lifecycle & Zero-Knowledge Architecture</h3>
+                                    <p class="dash-card-sub">Hardware-enforced pipeline ensuring sovereign confidentiality across all nodes</p>
+                                </div>
+                                <span class="badge-status-green">HARDWARE ENCLAVE ACTIVE</span>
+                            </div>
+                            <div class="step-pipeline-grid">
+                                <div class="step-pipeline-card">
+                                    <div class="step-number-circle">1</div>
+                                    <h4 class="step-title">Quantum TRNG Entropy</h4>
+                                    <p class="step-desc">Continuous true random number generation via hardware quantum tunneling sensors.</p>
+                                </div>
+                                <div class="step-pipeline-card">
+                                    <div class="step-number-circle">2</div>
+                                    <h4 class="step-title">Split Shamir Secrets</h4>
+                                    <p class="step-desc">Master keys partitioned using (3,5) threshold schema among global custodian partners.</p>
+                                </div>
+                                <div class="step-pipeline-card active-step">
+                                    <div class="step-number-circle">3</div>
+                                    <h4 class="step-title">Swiss HSM Enclave</h4>
+                                    <p class="step-desc">Keys loaded strictly inside temper-resistant FIPS 140-3 Level 4 hardware module in Zurich.</p>
+                                </div>
+                                <div class="step-pipeline-card">
+                                    <div class="step-number-circle">4</div>
+                                    <h4 class="step-title">Ephemeral Decryption</h4>
+                                    <p class="step-desc">Zero-knowledge in-memory RAM tokens generated per session, destroyed upon disconnect.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cryptographic Ledger & HSM Status -->
+                        <div class="dash-content-grid">
+                            ${renderTableCard('Immutable Cryptographic Access Ledger', 'Timestamped SHA-256 access signatures and decryption audit logs',
+                                ['EVENT ID', 'VAULT TARGET', 'CALLER HASH', 'CIPHER', 'TIMESTAMP', 'VERIFICATION'],
+                                [
+                                    ['<strong>EVT-9042</strong>', 'Sovereign Core Ledger', '<code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.75rem;">SHA-256: 4f9b...a10c</code>', 'AES-256-GCM', 'Just now', '<span class="badge-status-green">VERIFIED</span>'],
+                                    ['<strong>EVT-9041</strong>', 'M&A Deal Vault Alpha', '<code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.75rem;">SHA-256: b83e...77d1</code>', 'AES-256-GCM', '12 mins ago', '<span class="badge-status-green">VERIFIED</span>'],
+                                    ['<strong>EVT-9040</strong>', 'Zurich Banking Token', '<code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.75rem;">SHA-256: 12cd...ee59</code>', 'ChaCha20-Poly1305', '45 mins ago', '<span class="badge-status-green">VERIFIED</span>'],
+                                ]
+                            )}
+                            <div class="dash-side-col">
+                                <div class="dash-card">
+                                    <div class="dash-card-header"><h3 class="dash-card-title">HSM Hardware Status</h3><span class="badge-status-green">ONLINE</span></div>
+                                    <p class="dash-card-sub">Stationed in Swiss Fiduciary High-Security Facility (Gotthard Facility).</p>
+                                    <div class="compliance-metric-box">
+                                        <div class="compliance-details">
+                                            <div class="comp-row"><span>HSM Firmware</span><strong>v4.18.2-SEC</strong></div>
+                                            <div class="comp-row"><span>Hardware Tamper</span><strong>0 Alerts Logged</strong></div>
+                                            <div class="comp-row"><span>Cluster Sync</span><strong>Zero Drift (&lt;1ms)</strong></div>
+                                            <div class="comp-row"><span>Entropy Rate</span><strong>400 MB/s</strong></div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-dash-primary" style="width: 100%;"><i class="fa-solid fa-lock"></i> Trigger Self-Test Routine</button>
+                                </div>
+
+                              
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'admin-matrix': function () {
+                    return `
+                        ${renderBanner('REGIONAL OPERATIONS OVERSIGHT', 'Global Practice Matrix & Regional Capital Hubs', 'Cross-border practice performance, partner stations, and multi-jurisdictional compliance across New York, London, Zurich, and Singapore.', 'Dispatch Regional Directive', 'Download Matrix Deck', 'fa-paper-plane', 'fa-file-pdf')}
+                        
+                        <!-- 4 Flagship Hub Cards -->
+                        <div class="hub-cards-grid">
+                            <div class="hub-card">
+                                <div class="hub-card-header">
+                                    <div class="hub-flag-title">
+                                        <div class="hub-icon-wrap"><i class="fa-solid fa-landmark"></i></div>
+                                        <div class="hub-title-text">
+                                            <h4>New York Americas HQ</h4>
+                                            <span>1200 Avenue of the Americas, NY</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge-status-green">PRIMARY HUB</span>
+                                </div>
+                                <div class="hub-stats-row">
+                                    <div class="hub-stat-item"><span class="hub-stat-label">AUM</span><strong class="hub-stat-val">$1.82B</strong></div>
+                                    <div class="hub-stat-item"><span class="hub-stat-label">LEAD PARTNER</span><strong class="hub-stat-val">V. Vance</strong></div>
+                                    <div class="hub-stat-item"><span class="hub-stat-label">ADVISORS</span><strong class="hub-stat-val">42 Staff</strong></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 0.78rem; color: #64748b;">
+                                    <span>Local Time: <strong>EST (UTC-5)</strong></span>
+                                    <span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle" style="font-size: 0.55rem;"></i> Active Trading</span>
+                                </div>
+                                <button type="button" class="btn btn-block-action"><i class="fa-solid fa-building"></i> Inspect New York Practice Desk</button>
+                            </div>
+
+                            <div class="hub-card">
+                                <div class="hub-card-header">
+                                    <div class="hub-flag-title">
+                                        <div class="hub-icon-wrap"><i class="fa-solid fa-building-columns"></i></div>
+                                        <div class="hub-title-text">
+                                            <h4>London Financial City</h4>
+                                            <span>100 Bishopsgate, London EC2</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge-status-green">EMEA HUB</span>
+                                </div>
+                                <div class="hub-stats-row">
+                                    <div class="hub-stat-item"><span class="hub-stat-label">AUM</span><strong class="hub-stat-val">£1.24B</strong></div>
+                                    <div class="hub-stat-item"><span class="hub-stat-label">LEAD PARTNER</span><strong class="hub-stat-val">J. Hastings</strong></div>
+                                    <div class="hub-stat-item"><span class="hub-stat-label">ADVISORS</span><strong class="hub-stat-val">28 Staff</strong></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 0.78rem; color: #64748b;">
+                                    <span>Local Time: <strong>GMT (UTC+0)</strong></span>
+                                    <span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle" style="font-size: 0.55rem;"></i> Active Trading</span>
+                                </div>
+                                <button type="button" class="btn btn-block-action"><i class="fa-solid fa-building"></i> Inspect London Practice Desk</button>
+                            </div>
+
+                            <div class="hub-card">
+                                <div class="hub-card-header">
+                                    <div class="hub-flag-title">
+                                        <div class="hub-icon-wrap"><i class="fa-solid fa-vault"></i></div>
+                                        <div class="hub-title-text">
+                                            <h4>Zurich Private Wealth</h4>
+                                            <span>Bahnhofstrasse 45, Zurich</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge-status-green">SWISS HUB</span>
+                                </div>
+                                <div class="hub-stats-row">
+                                    <div class="hub-stat-item"><span class="hub-stat-label">AUM</span><strong class="hub-stat-val">€1.10B</strong></div>
+                                    <div class="hub-stat-item"><span class="hub-stat-label">LEAD PARTNER</span><strong class="hub-stat-val">H. Lindqvist</strong></div>
+                                    <div class="hub-stat-item"><span class="hub-stat-label">ADVISORS</span><strong class="hub-stat-val">18 Staff</strong></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 0.78rem; color: #64748b;">
+                                    <span>Local Time: <strong>CET (UTC+1)</strong></span>
+                                    <span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle" style="font-size: 0.55rem;"></i> Vault Custody Open</span>
+                                </div>
+                                <button type="button" class="btn btn-block-action"><i class="fa-solid fa-building"></i> Inspect Zurich Practice Desk</button>
+                            </div>
+
+                            <div class="hub-card">
+                                <div class="hub-card-header">
+                                    <div class="hub-flag-title">
+                                        <div class="hub-icon-wrap"><i class="fa-solid fa-compass"></i></div>
+                                        <div class="hub-title-text">
+                                            <h4>Singapore Marina Bay</h4>
+                                            <span>Marina Bay Financial Centre, SG</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge-status-green">APAC HUB</span>
+                                </div>
+                                <div class="hub-stats-row">
+                                    <div class="hub-stat-item"><span class="hub-stat-label">AUM</span><strong class="hub-stat-val">$720M</strong></div>
+                                    <div class="hub-stat-item"><span class="hub-stat-label">LEAD PARTNER</span><strong class="hub-stat-val">K. Tanaka</strong></div>
+                                    <div class="hub-stat-item"><span class="hub-stat-label">ADVISORS</span><strong class="hub-stat-val">16 Staff</strong></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 0.78rem; color: #64748b;">
+                                    <span>Local Time: <strong>SGT (UTC+8)</strong></span>
+                                    <span style="color: #3b82f6; font-weight: 700;"><i class="fa-solid fa-moon" style="font-size: 0.7rem;"></i> After Hours Surveillance</span>
+                                </div>
+                                <button type="button" class="btn btn-block-action"><i class="fa-solid fa-building"></i> Inspect Singapore Practice Desk</button>
+                            </div>
+                        </div>
+
+                        <!-- Bilateral Cross-Border Syndicate Matrix -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Cross-Border Fiduciary Syndication Corridors</h3>
+                                    <p class="dash-card-sub">Active multi-jurisdictional advisory pipelines connecting global desks</p>
+                                </div>
+                                <button type="button" class="btn-card-action"><i class="fa-solid fa-diagram-project"></i> Corridors Map</button>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead>
+                                        <tr><th>CORRIDOR CODE</th><th>ORIGIN HUB</th><th>DESTINATION DESK</th><th>AGGREGATE PIPELINE</th><th>REGULATORY PROTOCOL</th><th>STATUS</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td><strong>CORR-NY-LON</strong></td><td>New York Americas</td><td>London Financial City</td><td>$680M Active M&A</td><td>US-UK Bilateral Trade Treaty</td><td><span class="badge-status-green">OPTIMIZED</span></td></tr>
+                                        <tr><td><strong>CORR-ZUR-NY</strong></td><td>Zurich Private Wealth</td><td>New York Americas</td><td>€420M Escrow Trust</td><td>Swiss-US FATCA / SEC Fiduciary</td><td><span class="badge-status-green">OPTIMIZED</span></td></tr>
+                                        <tr><td><strong>CORR-LON-SG</strong></td><td>London Financial City</td><td>Singapore Marina Bay</td><td>£310M ESG Infrastructure</td><td>Commonwealth Cross-Border Framework</td><td><span class="badge-status-green">OPTIMIZED</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'admin-audits': function () {
+                    return `
+                        ${renderBanner('FIDUCIARY REVENUE TELEMETRY', 'Institutional Billings, Retainers & Escrow Audits', 'Global fee realization, advisory retainer schedules, and sovereign transaction escrow reconciliation across multi-currency accounts.', 'Generate Billing Run', 'Export Ledger CSV', 'fa-receipt', 'fa-file-csv')}
+                        ${renderKPIs([
+                            { label: 'Q3 REALIZED REVENUE', val: '$84.2M', icon: 'fa-receipt', trend: '+18.4% Ahead of Target', positive: true },
+                            { label: 'ESCROW RETAINERS HELD', val: '$12.6M', icon: 'fa-vault', trend: 'Fiduciary Guarantee Active', positive: true },
+                            { label: 'DAYS SALES OUTSTANDING', val: '22 Days', icon: 'fa-clock', trend: 'Industry Leading Speed', positive: true },
+                            { label: 'DISPUTED TRANSACTIONS', val: '0.00%', icon: 'fa-circle-check', trend: '100% Client Settlement', positive: true }
+                        ])}
+
+                        <!-- Escrow Distribution Reserve Meter Card -->
+                        <div class="dash-card" style="margin-bottom: 2rem;">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Institutional Escrow Reserve Allocations</h3>
+                                    <p class="dash-card-sub">Multi-currency sovereign deposits deposited with AAA-rated custodial tier-1 banks</p>
+                                </div>
+                                <span class="badge-status-green">$12.6M GUARANTEED</span>
+                            </div>
+                            <div class="dash-grid-3" style="margin-top: 1rem;">
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: #0f172a;">JPMorgan Chase (USD)</span>
+                                        <strong style="color: #2563eb;">$6,400,000</strong>
+                                    </div>
+                                    <div class="progress-track" style="margin-bottom: 0.5rem;"><div class="progress-fill" style="width: 51%;"></div></div>
+                                    <span style="font-size: 0.72rem; color: #64748b;">Allocation: 50.8% of sovereign reserves &bull; NY Fed Account</span>
+                                </div>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: #0f172a;">UBS Switzerland (CHF/EUR)</span>
+                                        <strong style="color: #059669;">€4,200,000</strong>
+                                    </div>
+                                    <div class="progress-track" style="margin-bottom: 0.5rem;"><div class="progress-fill" style="width: 33%; background: #10b981;"></div></div>
+                                    <span style="font-size: 0.72rem; color: #64748b;">Allocation: 33.3% of reserves &bull; FINMA Segregated</span>
+                                </div>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: #0f172a;">Barclays Corporate (GBP)</span>
+                                        <strong style="color: #d97706;">£2,000,000</strong>
+                                    </div>
+                                    <div class="progress-track" style="margin-bottom: 0.5rem;"><div class="progress-fill" style="width: 16%; background: #f59e0b;"></div></div>
+                                    <span style="font-size: 0.72rem; color: #64748b;">Allocation: 15.9% of reserves &bull; Bank of England Ring-fenced</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invoicing & Fiduciary Escrow Ledger -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Institutional Invoices & Fiduciary Escrow Ledger</h3>
+                                    <p class="dash-card-sub">Active advisory accounts and cryptographically sealed settlement receipts</p>
+                                </div>
+                                <div class="dash-card-actions"><button class="btn-card-action"><i class="fa-solid fa-download"></i> Download All Vouchers</button></div>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>INVOICE ID</th><th>CLIENT ACCOUNT</th><th>PRACTICE AREA</th><th>RETAINER SUM</th><th>SETTLEMENT STATUS</th><th>SETTLEMENT CHANNEL</th><th>ACTIONS</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>INV-2026-8801</strong></td><td>Blackstone Sovereign Capital</td><td>Strategic M&A Advisory</td><td>$450,000</td><td><span class="badge-status-green">SETTLED</span></td><td>Fedwire Immediate</td><td><button class="table-btn">Receipt PDF</button></td></tr>
+                                        <tr><td><strong>INV-2026-8802</strong></td><td>Zurich Private Wealth S.A.</td><td>Swiss Fiduciary Wealth</td><td>€380,000</td><td><span class="badge-status-green">SETTLED</span></td><td>SEPA Corporate Instant</td><td><button class="table-btn">Receipt PDF</button></td></tr>
+                                        <tr><td><strong>INV-2026-8803</strong></td><td>Aethelgard Holdings PLC</td><td>Cross-Border Structuring</td><td>£290,000</td><td><span class="badge-status-blue">IN ESCROW</span></td><td>CHAPS Same-Day</td><td><button class="table-btn">Receipt PDF</button></td></tr>
+                                        <tr><td><strong>INV-2026-8804</strong></td><td>Pacific Rim Sovereign Fund</td><td>Capital Restructuring</td><td>$520,000</td><td><span class="badge-status-blue">IN ESCROW</span></td><td>SWIFT GPI Fast</td><td><button class="table-btn">Receipt PDF</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'admin-governance': function () {
+                    return `
+                        ${renderBanner('POLICY & STATUTORY OVERSIGHT', 'Advisory Governance Charters & Statutory Filings', 'Board resolution charters, ethical standard compliance, cross-border statutory filing verifications, and regulatory audit attestations.', 'File Statutory Attestation', 'Download Policy Register', 'fa-stamp', 'fa-book')}
+                        
+                        <!-- Regulatory Accreditation Scorecards -->
+                        <div class="cert-cards-grid" style="margin-bottom: 2rem;">
+                            <div class="cert-seal-card">
+                                <i class="fa-solid fa-scale-balanced cert-seal-icon" style="color: #2563eb;"></i>
+                                <h4 class="cert-seal-title">SEC Rule 206(4)</h4>
+                                <p class="cert-seal-desc">Investment Advisers Act Fiduciary Standard with zero citations.</p>
+                                <span class="badge-status-green">VERIFIED 100%</span>
+                            </div>
+                            <div class="cert-seal-card">
+                                <i class="fa-solid fa-landmark cert-seal-icon" style="color: #059669;"></i>
+                                <h4 class="cert-seal-title">Swiss FINMA Mandate</h4>
+                                <p class="cert-seal-desc">Compliant cross-border banking confidentiality and client custody.</p>
+                                <span class="badge-status-green">CLEAN AUDIT</span>
+                            </div>
+                            <div class="cert-seal-card">
+                                <i class="fa-solid fa-shield-halved cert-seal-icon" style="color: #7c3aed;"></i>
+                                <h4 class="cert-seal-title">UK FCA Cross-Border</h4>
+                                <p class="cert-seal-desc">FCA Tier-1 institutional advisory authorization ratified for 2026.</p>
+                                <span class="badge-status-green">CURRENT</span>
+                            </div>
+                            <div class="cert-seal-card">
+                                <i class="fa-solid fa-file-contract cert-seal-icon" style="color: #d97706;"></i>
+                                <h4 class="cert-seal-title">EU MiFID II Rules</h4>
+                                <p class="cert-seal-desc">Institutional transparency, cost disclosure, and order execution standards.</p>
+                                <span class="badge-status-green">RATIFIED</span>
+                            </div>
+                        </div>
+
+                        <!-- Statutory Policy Codex Cards -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Statutory Policy Directives & Fiduciary Charters</h3>
+                                    <p class="dash-card-sub">Legally ratified covenants governing institutional advisory mandates</p>
+                                </div>
+                                <button type="button" class="btn-card-action"><i class="fa-solid fa-file-pdf"></i> Export Full Codex</button>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>CHARTER ID</th><th>POLICY DIRECTIVE</th><th>GOVERNING JURISDICTION</th><th>EFFECTIVE DATE</th><th>OVERSIGHT OFFICER</th><th>RATIFICATION</th><th>ACTIONS</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>POL-01</strong></td><td><strong>Cross-Border Asset Transfer Protocol</strong></td><td>US / UK / Swiss Tripartite</td><td>Jan 01, 2026</td><td>Victoria Vance</td><td><span class="badge-status-green">BOARD RATIFIED</span></td><td><button class="table-btn">Read Charter</button></td></tr>
+                                        <tr><td><strong>POL-02</strong></td><td><strong>Algorithmic Market Discretion Standard</strong></td><td>SEC / FINMA Approved</td><td>Mar 15, 2026</td><td>Julian Hastings</td><td><span class="badge-status-green">BOARD RATIFIED</span></td><td><button class="table-btn">Read Charter</button></td></tr>
+                                        <tr><td><strong>POL-03</strong></td><td><strong>Sovereign Immunity & Conflict Avoidance</strong></td><td>Sovereign Wealth Protocol</td><td>Jun 01, 2026</td><td>Kenji Tanaka</td><td><span class="badge-status-green">BOARD RATIFIED</span></td><td><button class="table-btn">Read Charter</button></td></tr>
+                                        <tr><td><strong>POL-04</strong></td><td><strong>Digital Custody & Multi-Sig Escrow</strong></td><td>Global Banking Syndicate</td><td>Aug 10, 2026</td><td>Henrik Lindqvist</td><td><span class="badge-status-green">BOARD RATIFIED</span></td><td><button class="table-btn">Read Charter</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'admin-telemetry': function () {
+                    return `
+                        ${renderBanner('INFRASTRUCTURE PERFORMANCE MONITOR', 'Real-Time Telemetry & Core System Infrastructure', 'Server latency, cluster uptime, database connection pools, and API throughput health across all global cloud regions.', 'Purge Telemetry Cache', 'Download Syslog Archive', 'fa-trash-can', 'fa-file-zipper')}
+                        ${renderKPIs([
+                            { label: 'CORE SERVER UPTIME', val: '99.99%', icon: 'fa-heart-pulse', trend: 'Zero Downtime This Year', positive: true },
+                            { label: 'AVG API LATENCY', val: '14 ms', icon: 'fa-gauge-high', trend: 'Edge CDN Accelerated', positive: true },
+                            { label: 'REQUESTS PER SECOND', val: '8,420 rps', icon: 'fa-network-wired', trend: 'Peak 50,000 rps Capacity', positive: true },
+                            { label: 'DB REPLICATION LAG', val: '< 2 ms', icon: 'fa-database', trend: 'Multi-Region High Availability', positive: true }
+                        ])}
+
+                        <!-- Live Interactive Dark Terminal Console -->
+                        <div class="terminal-window" style="margin-bottom: 2rem;">
+                            <div class="terminal-header">
+                                <div class="terminal-dots"><span class="term-dot red"></span><span class="term-dot yellow"></span><span class="term-dot green"></span></div>
+                                <span class="terminal-title">STACKLY CORE TELEMETRY STREAM // LIVE NODE OUTPUT</span>
+                                <span style="font-size:0.7rem; color:#10b981; font-weight: 700;"><i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i> LIVE STREAMING</span>
+                            </div>
+                            <div class="terminal-body">
+                                <div class="term-line"><span class="term-time">[14:30:02.104]</span><span class="term-info">[CLUSTER-US-EAST]</span><span class="term-msg">Heartbeat verified. CPU load at 24%, Memory 18.2GB / 64GB. Response time 8ms.</span></div>
+                                <div class="term-line"><span class="term-time">[14:30:04.592]</span><span class="term-success">[HSM-AUTH]</span><span class="term-msg">Hardware cryptographic token validated for session EVT-9042. SHA-256 integrity OK.</span></div>
+                                <div class="term-line"><span class="term-time">[14:30:08.820]</span><span class="term-info">[ROUTING-GATEWAY]</span><span class="term-msg">Edge traffic routed via Cloudflare Enterprise. 0 DDoS anomalies detected.</span></div>
+                                <div class="term-line"><span class="term-time">[14:30:12.441]</span><span class="term-warn">[CACHE-SYNC]</span><span class="term-msg">Regional cache replication to Zurich Banking Cluster completed in 1.4ms.</span></div>
+                                <div class="term-line"><span class="term-time">[14:30:16.002]</span><span class="term-info">[DB-READ-REPLICA]</span><span class="term-msg">PostgreSQL 16 Multi-AZ consensus achieved across 4 global regions.</span></div>
+                                <div class="term-line"><span class="term-time">[14:30:20.188]</span><span class="term-success">[VDR-ENCRYPT]</span><span class="term-msg">Virtual Data Room access session verified for user m.chen@blackstone-sov.com (IP: 198.51.100.44).</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Microservices Health Status Grid -->
+                        <div class="microservices-grid">
+                            <div class="microservice-card">
+                                <div class="microservice-left"><div class="microservice-icon"><i class="fa-solid fa-network-wired"></i></div><div class="microservice-info"><h5>API Gateway Cluster</h5><span>Cloudflare Enterprise</span></div></div>
+                                <div class="microservice-metric"><strong>14 ms</strong><span>Avg Latency</span></div>
+                            </div>
+                            <div class="microservice-card">
+                                <div class="microservice-left"><div class="microservice-icon"><i class="fa-solid fa-id-card-clip"></i></div><div class="microservice-info"><h5>Auth & SSO Engine</h5><span>Okta / SAML 2.0</span></div></div>
+                                <div class="microservice-metric"><strong>8 ms</strong><span>Avg Latency</span></div>
+                            </div>
+                            <div class="microservice-card">
+                                <div class="microservice-left"><div class="microservice-icon"><i class="fa-solid fa-database"></i></div><div class="microservice-info"><h5>PostgreSQL Core</h5><span>Multi-Region Multi-AZ</span></div></div>
+                                <div class="microservice-metric"><strong>100%</strong><span>Consensus</span></div>
+                            </div>
+                            <div class="microservice-card">
+                                <div class="microservice-left"><div class="microservice-icon"><i class="fa-solid fa-bolt"></i></div><div class="microservice-info"><h5>Redis Distributed Cache</h5><span>Global Edge Cluster</span></div></div>
+                                <div class="microservice-metric"><strong>1.2 ms</strong><span>Read Speed</span></div>
+                            </div>
+                            <div class="microservice-card">
+                                <div class="microservice-left"><div class="microservice-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="microservice-info"><h5>Swiss HSM Enclave</h5><span>FIPS 140-3 Level 4</span></div></div>
+                                <div class="microservice-metric"><strong>0.8 ms</strong><span>Crypt Execution</span></div>
+                            </div>
+                            <div class="microservice-card">
+                                <div class="microservice-left"><div class="microservice-icon"><i class="fa-solid fa-hard-drive"></i></div><div class="microservice-info"><h5>Document Vault S3</h5><span>Encrypted Object Store</span></div></div>
+                                <div class="microservice-metric"><strong>99.98%</strong><span>Availability</span></div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'admin-documents': function () {
+                    return `
+                        ${renderBanner('ENTERPRISE CONTRACTS ARCHIVE', 'Master Document Repositories & Legal Vault', 'Centralized institutional legal templates, bilateral advisory retainers, practice playbooks, and signed sovereign covenants.', 'Upload Master File', 'Re-Index Vault', 'fa-cloud-arrow-up', 'fa-arrows-rotate')}
+                        
+                        <!-- 5 Visual Folder Directory Cards -->
+                        <div class="folder-cards-grid">
+                            <div class="folder-card-item">
+                                <i class="fa-solid fa-folder-closed folder-icon-large"></i>
+                                <div class="folder-card-info">
+                                    <h4>Master Advisory Retainers</h4>
+                                    <p>Institutional retainer frameworks and annual engagement covenants.</p>
+                                    <span class="folder-card-count">312 Master Files</span>
+                                </div>
+                            </div>
+                            <div class="folder-card-item">
+                                <i class="fa-solid fa-folder-closed folder-icon-large" style="color: #059669;"></i>
+                                <div class="folder-card-info">
+                                    <h4>M&A Practice Playbooks</h4>
+                                    <p>Cross-border merger execution models, diligence protocols & valuation guides.</p>
+                                    <span class="folder-card-count" style="color: #059669; background: #ecfdf5;">48 Volumes</span>
+                                </div>
+                            </div>
+                            <div class="folder-card-item">
+                                <i class="fa-solid fa-folder-closed folder-icon-large" style="color: #7c3aed;"></i>
+                                <div class="folder-card-info">
+                                    <h4>Board Charters & Codices</h4>
+                                    <p>Ratified board oversight charters, ethical covenants and ESG mandates.</p>
+                                    <span class="folder-card-count" style="color: #7c3aed; background: #f3e8ff;">64 Charters</span>
+                                </div>
+                            </div>
+                            <div class="folder-card-item">
+                                <i class="fa-solid fa-folder-closed folder-icon-large" style="color: #d97706;"></i>
+                                <div class="folder-card-info">
+                                    <h4>Bilateral SOW Frameworks</h4>
+                                    <p>Statements of work, milestone deliverables and consultant staffing ratios.</p>
+                                    <span class="folder-card-count" style="color: #d97706; background: #fef3c7;">92 Frameworks</span>
+                                </div>
+                            </div>
+                            <div class="folder-card-item">
+                                <i class="fa-solid fa-folder-closed folder-icon-large" style="color: #dc2626;"></i>
+                                <div class="folder-card-info">
+                                    <h4>Cross-Border Escrow Templates</h4>
+                                    <p>Tripartite custodial banking agreements with JPMorgan & UBS Zurich.</p>
+                                    <span class="folder-card-count" style="color: #dc2626; background: #fee2e2;">28 Templates</span>
+                                </div>
+                            </div>
+                            <div class="folder-card-item" style="border-style: dashed; justify-content: center; text-align: center;">
+                                <div style="color: #64748b;">
+                                    <i class="fa-solid fa-plus" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #2563eb;"></i>
+                                    <h4 style="font-size: 0.92rem; font-weight: 700; color: #0f172a;">Create New Repository</h4>
+                                    <p style="font-size: 0.75rem; margin: 0;">Add encrypted directory category</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Master Legal Manifest Table -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Master Legal Vault & Contract Manifest</h3>
+                                    <p class="dash-card-sub">Encrypted document versions and access permission tags</p>
+                                </div>
+                                <div class="dash-card-actions"><button class="btn-card-action"><i class="fa-solid fa-filter"></i> Filter Files</button></div>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>DOCUMENT TITLE</th><th>CATEGORY</th><th>VERSION</th><th>FILE SIZE</th><th>CRYPTOGRAPHIC CHECKSUM</th><th>ACTIONS</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><i class="fa-solid fa-file-pdf" style="color: #dc2626; margin-right: 6px;"></i><strong>Master Advisory Retainer Framework</strong></td><td>Legal Templates</td><td>v4.2 (2026)</td><td>14.8 MB</td><td><code style="font-size:0.75rem;">SHA-256: 4f9b...a10c</code></td><td><button class="table-btn">Download PDF</button></td></tr>
+                                        <tr><td><i class="fa-solid fa-file-pdf" style="color: #dc2626; margin-right: 6px;"></i><strong>Cross-Border Escrow Standard Protocol</strong></td><td>Banking Guidelines</td><td>v3.1</td><td>8.4 MB</td><td><code style="font-size:0.75rem;">SHA-256: 88aa...11cc</code></td><td><button class="table-btn">Download PDF</button></td></tr>
+                                        <tr><td><i class="fa-solid fa-file-pdf" style="color: #dc2626; margin-right: 6px;"></i><strong>Sovereign Governance Due Diligence Playbook</strong></td><td>Advisory Matrix</td><td>v2.8</td><td>22.1 MB</td><td><code style="font-size:0.75rem;">SHA-256: 77fa...00ab</code></td><td><button class="table-btn">Download PDF</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'admin-settings': function () {
+                    return `
+                        ${renderBanner('SYSTEM CONFIGURATION CONSOLE', 'Platform Settings, Webhooks & Developer API', 'Production API credentials, webhook subscription endpoints, IP CIDR whitelist filters, and automated session thresholds.', 'Generate Production Key', 'Save System Config', 'fa-key', 'fa-floppy-disk')}
+                        ${renderKPIs([
+                            { label: 'ACTIVE API TOKENS', val: '34 Keys', icon: 'fa-key', trend: 'Rate Limited to 50k/hr', positive: true },
+                            { label: 'WEBHOOK DISPATCHERS', val: '12 Active', icon: 'fa-share-nodes', trend: '100% Success Delivery', positive: true },
+                            { label: 'SSO IDENTITY PROVIDER', val: 'SAML 2.0', icon: 'fa-id-badge', trend: 'Okta Enterprise Active', positive: true },
+                            { label: 'AUTO SESSION TIMEOUT', val: '30 Minutes', icon: 'fa-stopwatch', trend: 'Strict Inactivity Logout', positive: true }
+                        ])}
+
+                        <!-- Two-Column Settings Layout -->
+                        <div class="dash-content-grid">
+                            <div class="dash-card">
+                                <div class="dash-card-header">
+                                    <div>
+                                        <h3 class="dash-card-title">Production API Connectors & Client Tokens</h3>
+                                        <p class="dash-card-sub">Integrations synchronized with enterprise ERP and custodial core systems</p>
+                                    </div>
+                                    <button type="button" class="btn-card-action"><i class="fa-solid fa-plus"></i> New Key</button>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                            <div>
+                                                <strong style="font-size: 0.9rem; color: #0f172a;">Blackstone ERP Financial Link</strong>
+                                                <span style="font-size: 0.75rem; color: #64748b; display: block;">Production live stream webhook &bull; Read/Write</span>
+                                            </div>
+                                            <span class="badge-status-green">ACTIVE</span>
+                                        </div>
+                                        <div style="display: flex; gap: 0.5rem; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; padding: 0.4rem 0.75rem; border-radius: 6px;">
+                                            <code style="flex: 1; font-size: 0.8rem; color: #334155;">sk_live_9042••••••••••••••••38a</code>
+                                            <button type="button" class="table-btn" style="padding: 0.2rem 0.5rem;"><i class="fa-solid fa-copy"></i> Copy</button>
+                                        </div>
+                                    </div>
+
+                                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                            <div>
+                                                <strong style="font-size: 0.9rem; color: #0f172a;">Zurich Private Core Banking API</strong>
+                                                <span style="font-size: 0.75rem; color: #64748b; display: block;">Escrow synchronization adapter &bull; Read Only</span>
+                                            </div>
+                                            <span class="badge-status-green">ACTIVE</span>
+                                        </div>
+                                        <div style="display: flex; gap: 0.5rem; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; padding: 0.4rem 0.75rem; border-radius: 6px;">
+                                            <code style="flex: 1; font-size: 0.8rem; color: #334155;">sk_live_7712••••••••••••••••10c</code>
+                                            <button type="button" class="table-btn" style="padding: 0.2rem 0.5rem;"><i class="fa-solid fa-copy"></i> Copy</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="dash-side-col">
+                                <div class="dash-card">
+                                    <div class="dash-card-header"><h3 class="dash-card-title">Security Governance Controls</h3><span class="badge-status-green">STRICT</span></div>
+                                    <div class="compliance-metric-box">
+                                        <div class="compliance-details">
+                                            <div class="comp-row"><span>Two-Factor Auth</span><strong>Hardware Enforced</strong></div>
+                                            <div class="comp-row"><span>IP CIDR Whitelist</span><strong>Active (2 Subnets)</strong></div>
+                                            <div class="comp-row"><span>Inactivity Timeout</span><strong>1,800 Seconds</strong></div>
+                                            <div class="comp-row"><span>Audit Log Retention</span><strong>10 Years Statutory</strong></div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <label class="dash-input-label">CORPORATE IP CIDR FILTER</label>
+                                        <input type="text" class="dash-input" value="192.168.1.0/24, 10.0.0.0/16" style="margin-top: 0.25rem;">
+                                    </div>
+                                    <button type="button" class="btn btn-dash-primary" style="width: 100%; margin-bottom: 0.5rem;"><i class="fa-solid fa-sliders"></i> Apply Security Policies</button>
+                                    <button type="button" class="btn btn-block-action" style="color: #dc2626;"><i class="fa-solid fa-skull-crossbones"></i> Emergency Kill Switch</button>
+                                </div>
+
+                               
+                            </div>
+                        </div>
+                    `;
+                }
+            };
+
+            // 4. Unique Renderers for 10 Manager Channels
+            const managerViews = {
+                'mgr-overview': function () {
+                    return `
+                        ${renderBanner('PRACTICE ENGAGEMENT OPERATIONS', 'Advisory Practice Operations Hub', 'Strategic advisory practice delivery, senior consultant allocations, milestone tracking, and client realization.', 'Export Operations Briefing', 'Initiate Practice Sync')}
+                        ${renderKPIs([
+                            { label: 'ACTIVE ENGAGEMENT PIPELINE', val: '28 Deals', icon: 'fa-briefcase', trend: '$340M Aggregate Scope', positive: true },
+                            { label: 'BILLABLE UTILIZATION', val: '94.2%', icon: 'fa-user-check', trend: 'Exceeding 90% Target', positive: true },
+                            { label: 'CLIENT SATISFACTION (NPS)', val: '+78 NPS', icon: 'fa-star', trend: 'Top Tier Institutional', positive: true },
+                            { label: 'DELIVERABLES ON SCHEDULE', val: '98.4%', icon: 'fa-clock', trend: '14 Approved This Month', positive: true }
+                        ])}
+
+                        <!-- Active Engagements Visual Cards -->
+                        <div class="dash-card" style="margin-bottom: 2rem;">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Active Strategic Engagements & Milestone Progress</h3>
+                                    <p class="dash-card-sub">Live monitoring of high-stakes client advisory workstreams</p>
+                                </div>
+                                <button type="button" class="btn-card-action"><i class="fa-solid fa-plus"></i> New Engagement</button>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <div>
+                                            <strong style="font-size: 1rem; color: #0f172a;">Project Titan: Transatlantic M&A Advisory</strong>
+                                            <span style="font-size: 0.78rem; color: #64748b; display: block;">Client: Blackstone Sovereign &bull; Lead: Victoria Vance &bull; 10 Practitioners</span>
+                                        </div>
+                                        <span class="badge-status-green">STAGE 4 (85%)</span>
+                                    </div>
+                                    <div class="progress-track" style="margin-bottom: 0.5rem;"><div class="progress-fill" style="width: 85%;"></div></div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #64748b;">
+                                        <span>Fee Realization: <strong>98% Realized ($1.8M Retainer)</strong></span>
+                                        <span>Next Board Milestone: <strong>Oct 15, 2026</strong></span>
+                                    </div>
+                                </div>
+
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <div>
+                                            <strong style="font-size: 1rem; color: #0f172a;">Nordic Clean Energy Grid Capital Transformation</strong>
+                                            <span style="font-size: 0.78rem; color: #64748b; display: block;">Client: Nordic Infrastructure Fund &bull; Lead: Julian Sterling &bull; 5 Practitioners</span>
+                                        </div>
+                                        <span class="badge-status-blue">STAGE 3 (70%)</span>
+                                    </div>
+                                    <div class="progress-track" style="margin-bottom: 0.5rem;"><div class="progress-fill" style="width: 70%; background: #0ea5e9;"></div></div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #64748b;">
+                                        <span>Fee Realization: <strong>92% Realized (€1.4M Retainer)</strong></span>
+                                        <span>Next Board Milestone: <strong>Oct 28, 2026</strong></span>
+                                    </div>
+                                </div>
+
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <div>
+                                            <strong style="font-size: 1rem; color: #0f172a;">Helios Global Logistics Restructuring</strong>
+                                            <span style="font-size: 0.78rem; color: #64748b; display: block;">Client: Helios Holdings &bull; Lead: Kenji Tanaka &bull; 3 Senior Advisors</span>
+                                        </div>
+                                        <span class="badge-status-green">FINAL REVIEW (95%)</span>
+                                    </div>
+                                    <div class="progress-track" style="margin-bottom: 0.5rem;"><div class="progress-fill" style="width: 95%; background: #10b981;"></div></div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #64748b;">
+                                        <span>Fee Realization: <strong>100% Realized ($950K Retainer)</strong></span>
+                                        <span>Next Board Milestone: <strong>Nov 05, 2026</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'mgr-deals': function () {
+                    return `
+                        ${renderBanner('TRANSACTION WORKSTREAMS', 'Client Engagements & M&A Advisory Pipeline', 'Active transactions under management, buy-side due diligence, sovereign syndications, and deal room milestones.', 'Create New Deal Room', 'Export Pipeline CSV', 'fa-folder-plus', 'fa-file-csv')}
+                        
+                        <!-- 4-Stage Kanban Deal Pipeline -->
+                        <div class="deal-pipeline-grid">
+                            <div class="pipeline-col">
+                                <div class="pipeline-col-header">
+                                    <span class="pipeline-col-title">Stage 1: Mandate & Scoping</span>
+                                    <span class="pipeline-col-count">3 Deals</span>
+                                </div>
+                                <div class="deal-stage-card">
+                                    <div class="deal-stage-code">Project Genesis</div>
+                                    <div class="deal-stage-client">Biotech Therapeutics Inc.</div>
+                                    <div class="deal-stage-metrics"><span>Valuation</span><span>$140M</span></div>
+                                </div>
+                                <div class="deal-stage-card">
+                                    <div class="deal-stage-code">Project Solaria</div>
+                                    <div class="deal-stage-client">Mediterranean Solar Trust</div>
+                                    <div class="deal-stage-metrics"><span>Valuation</span><span>€95M</span></div>
+                                </div>
+                            </div>
+
+                            <div class="pipeline-col">
+                                <div class="pipeline-col-header">
+                                    <span class="pipeline-col-title">Stage 2: Diligence & VDR</span>
+                                    <span class="pipeline-col-count">4 Deals</span>
+                                </div>
+                                <div class="deal-stage-card">
+                                    <div class="deal-stage-code">Project Apex</div>
+                                    <div class="deal-stage-client">Fintech Custody Platform</div>
+                                    <div class="deal-stage-metrics"><span>Valuation</span><span>$180M</span></div>
+                                </div>
+                                <div class="deal-stage-card">
+                                    <div class="deal-stage-code">Project Valkyrie</div>
+                                    <div class="deal-stage-client">Nordic Marine Logistics</div>
+                                    <div class="deal-stage-metrics"><span>Valuation</span><span>€210M</span></div>
+                                </div>
+                            </div>
+
+                            <div class="pipeline-col">
+                                <div class="pipeline-col-header">
+                                    <span class="pipeline-col-title">Stage 3: Board Structuring</span>
+                                    <span class="pipeline-col-count">3 Deals</span>
+                                </div>
+                                <div class="deal-stage-card">
+                                    <div class="deal-stage-code">Project Aurora</div>
+                                    <div class="deal-stage-client">Nordic Clean Grid</div>
+                                    <div class="deal-stage-metrics"><span>Valuation</span><span>€380M</span></div>
+                                </div>
+                                <div class="deal-stage-card">
+                                    <div class="deal-stage-code">Project Pacific</div>
+                                    <div class="deal-stage-client">SingaPort Maritime Fund</div>
+                                    <div class="deal-stage-metrics"><span>Valuation</span><span>$240M</span></div>
+                                </div>
+                            </div>
+
+                            <div class="pipeline-col">
+                                <div class="pipeline-col-header">
+                                    <span class="pipeline-col-title">Stage 4: Closing & Signing</span>
+                                    <span class="pipeline-col-count">2 Deals</span>
+                                </div>
+                                <div class="deal-stage-card" style="border-left: 3px solid #10b981;">
+                                    <div class="deal-stage-code">Project Titan</div>
+                                    <div class="deal-stage-client">Blackstone Sovereign</div>
+                                    <div class="deal-stage-metrics"><span>Valuation</span><span style="color:#10b981;">$450M</span></div>
+                                </div>
+                                <div class="deal-stage-card" style="border-left: 3px solid #10b981;">
+                                    <div class="deal-stage-code">Project Helvetia</div>
+                                    <div class="deal-stage-client">Zurich Wealth Core</div>
+                                    <div class="deal-stage-metrics"><span>Valuation</span><span style="color:#10b981;">€320M</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'mgr-team': function () {
+                    return `
+                        ${renderBanner('HUMAN CAPITAL ALLOCATION', 'Senior Partner & Consultant Utilization Rosters', 'Live practitioner allocation, project billable hours, domain specialization, and capacity management.', 'Reallocate Resources', 'Export Timesheets', 'fa-users-gear', 'fa-clock')}
+                        ${renderKPIs([
+                            { label: 'ACTIVE SENIOR PARTNERS', val: '14 Leads', icon: 'fa-user-tie', trend: '100% Client Retained', positive: true },
+                            { label: 'ENGAGED CONSULTANTS', val: '46 Advisors', icon: 'fa-users', trend: 'Global Advisory Practice', positive: true },
+                            { label: 'WEEKLY BILLABLE HOURS', val: '1,840 Hours', icon: 'fa-clock', trend: 'Avg 40.2 hrs/advisor', positive: true },
+                            { label: 'BENCH CAPACITY', val: '5.8%', icon: 'fa-battery-three-quarters', trend: 'Available for Urgent Mandates', positive: true }
+                        ])}
+
+                        <!-- Practitioner Team Grid -->
+                        <div class="user-cards-grid">
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);">VV</div>
+                                        <div class="user-card-info">
+                                            <h4>Victoria Vance</h4>
+                                            <span>Senior Managing Partner</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-green">100% ALLOCATED</span>
+                                        <span class="dash-card-badge">NEW YORK / LONDON</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Assigned Mandate:</span><strong>Project Titan M&A</strong></div>
+                                    <div class="user-card-meta-row"><span>Billable Hours (WTD):</span><strong>44.0 hrs</strong></div>
+                                    <div class="user-card-meta-row"><span>Practice Focus:</span><strong>Cross-Border Governance</strong></div>
+                                </div>
+                                <button type="button" class="table-btn" style="margin-top: 1rem;"><i class="fa-solid fa-address-card"></i> View Full Profile</button>
+                            </div>
+
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);">JS</div>
+                                        <div class="user-card-info">
+                                            <h4>Julian Sterling</h4>
+                                            <span>Advisory Director</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-blue">85% ALLOCATED</span>
+                                        <span class="dash-card-badge">LONDON OFFICE</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Assigned Mandate:</span><strong>Nordic Clean Grid</strong></div>
+                                    <div class="user-card-meta-row"><span>Billable Hours (WTD):</span><strong>38.5 hrs</strong></div>
+                                    <div class="user-card-meta-row"><span>Practice Focus:</span><strong>Corporate Finance & ESG</strong></div>
+                                </div>
+                                <button type="button" class="table-btn" style="margin-top: 1rem;"><i class="fa-solid fa-address-card"></i> View Full Profile</button>
+                            </div>
+
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">HL</div>
+                                        <div class="user-card-info">
+                                            <h4>Henrik Lindqvist</h4>
+                                            <span>Senior Swiss Partner</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-green">90% ALLOCATED</span>
+                                        <span class="dash-card-badge">ZURICH OFFICE</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Assigned Mandate:</span><strong>Zurich Wealth Strategy</strong></div>
+                                    <div class="user-card-meta-row"><span>Billable Hours (WTD):</span><strong>41.0 hrs</strong></div>
+                                    <div class="user-card-meta-row"><span>Practice Focus:</span><strong>Swiss Fiduciary Banking</strong></div>
+                                </div>
+                                <button type="button" class="table-btn" style="margin-top: 1rem;"><i class="fa-solid fa-address-card"></i> View Full Profile</button>
+                            </div>
+
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">ER</div>
+                                        <div class="user-card-info">
+                                            <h4>Elena Rostova</h4>
+                                            <span>Lead Financial Analyst</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-green">100% ALLOCATED</span>
+                                        <span class="dash-card-badge">NEW YORK OFFICE</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Assigned Mandate:</span><strong>Project Titan Valuation</strong></div>
+                                    <div class="user-card-meta-row"><span>Billable Hours (WTD):</span><strong>45.5 hrs</strong></div>
+                                    <div class="user-card-meta-row"><span>Practice Focus:</span><strong>Valuation Modeling</strong></div>
+                                </div>
+                                <button type="button" class="table-btn" style="margin-top: 1rem;"><i class="fa-solid fa-address-card"></i> View Full Profile</button>
+                            </div>
+
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);">KT</div>
+                                        <div class="user-card-info">
+                                            <h4>Kenji Tanaka</h4>
+                                            <span>Advisory Partner</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-blue">80% ALLOCATED</span>
+                                        <span class="dash-card-badge">SINGAPORE HUB</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Assigned Mandate:</span><strong>Helios Logistics</strong></div>
+                                    <div class="user-card-meta-row"><span>Billable Hours (WTD):</span><strong>36.0 hrs</strong></div>
+                                    <div class="user-card-meta-row"><span>Practice Focus:</span><strong>Supply Chain Strategy</strong></div>
+                                </div>
+                                <button type="button" class="table-btn" style="margin-top: 1rem;"><i class="fa-solid fa-address-card"></i> View Full Profile</button>
+                            </div>
+
+                            <div class="user-card-item">
+                                <div>
+                                    <div class="user-card-top">
+                                        <div class="user-card-avatar" style="background: linear-gradient(135deg, #475569 0%, #64748b 100%);">MV</div>
+                                        <div class="user-card-info">
+                                            <h4>Marcus Vance</h4>
+                                            <span>Associate Consultant</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-card-badges">
+                                        <span class="badge-status-blue" style="background:#fef3c7; color:#92400e;">20% (BENCH READY)</span>
+                                        <span class="dash-card-badge">LONDON OFFICE</span>
+                                    </div>
+                                    <div class="user-card-meta-row"><span>Assigned Mandate:</span><strong>Bench / Urgent Mandates</strong></div>
+                                    <div class="user-card-meta-row"><span>Billable Hours (WTD):</span><strong>12.0 hrs</strong></div>
+                                    <div class="user-card-meta-row"><span>Practice Focus:</span><strong>Diligence QA</strong></div>
+                                </div>
+                                <button type="button" class="table-btn" style="margin-top: 1rem; color:#2563eb;"><i class="fa-solid fa-bolt"></i> Deploy to Project</button>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'mgr-deliverables': function () {
+                    return `
+                        ${renderBanner('STRATEGY BRIEFING SCHEDULE', 'Deliverable Milestones & Board Presentations', 'Executive board presentation decks, valuation memos, and client stakeholder sign-off trackers.', 'Upload Deliverable', 'Request Client Signoff', 'fa-cloud-arrow-up', 'fa-signature')}
+                        
+                        <!-- Milestone Delivery Calendar -->
+                        <div class="milestone-timeline-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Executive Milestone Delivery Schedule</h3>
+                                    <p class="dash-card-sub">Upcoming boardroom briefings and formal deliverable sign-offs</p>
+                                </div>
+                                <button type="button" class="btn-card-action"><i class="fa-solid fa-calendar-plus"></i> Add Event</button>
+                            </div>
+                            
+                            <div class="milestone-item-row">
+                                <div class="milestone-date-badge">OCT 02, 2026</div>
+                                <div class="milestone-meta-info">
+                                    <h4>Board Deck: Cross-Border Synergies & Antitrust Clearances</h4>
+                                    <p>Client: Aethelgard Holdings PLC &bull; Lead Author: Julian Sterling &bull; 34 Keynote Slides</p>
+                                </div>
+                                <span class="badge-status-green">APPROVED</span>
+                                <button type="button" class="table-btn"><i class="fa-solid fa-download"></i> Keynote</button>
+                            </div>
+
+                            <div class="milestone-item-row">
+                                <div class="milestone-date-badge">OCT 10, 2026</div>
+                                <div class="milestone-meta-info">
+                                    <h4>Fiduciary Due Diligence Memorandum (Titan M&A)</h4>
+                                    <p>Client: Blackstone Sovereign Capital &bull; Lead Author: Elena Rostova &bull; 82 Pages</p>
+                                </div>
+                                <span class="badge-status-blue">QA IN REVIEW</span>
+                                <button type="button" class="table-btn"><i class="fa-solid fa-file-pdf"></i> Draft PDF</button>
+                            </div>
+
+                            <div class="milestone-item-row">
+                                <div class="milestone-date-badge">OCT 14, 2026</div>
+                                <div class="milestone-meta-info">
+                                    <h4>Global Supply Chain Stress-Test Valuation Model</h4>
+                                    <p>Client: Helios Logistics &bull; Lead Author: Kenji Tanaka &bull; Excel + Memo</p>
+                                </div>
+                                <span class="badge-status-blue">CLIENT REVIEW</span>
+                                <button type="button" class="table-btn"><i class="fa-solid fa-file-excel"></i> Model</button>
+                            </div>
+
+                            <div class="milestone-item-row">
+                                <div class="milestone-date-badge">OCT 22, 2026</div>
+                                <div class="milestone-meta-info">
+                                    <h4>Sovereign Energy Transition Retainer Blueprint</h4>
+                                    <p>Client: Nordic Infrastructure Fund &bull; Lead Author: Victoria Vance &bull; 24 Slides</p>
+                                </div>
+                                <span class="badge-status-blue">DRAFTING</span>
+                                <button type="button" class="table-btn"><i class="fa-solid fa-pen"></i> Edit</button>
+                            </div>
+                        </div>
+
+                        <!-- QA Checklist Card -->
+                        <div class="dash-card">
+                            <div class="dash-card-header"><h3 class="dash-card-title">Practice Quality Assurance Protocol</h3><span class="badge-status-green">STANDARD 100%</span></div>
+                            <div class="dash-grid-3">
+                                <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                    <div style="color: #059669; font-weight: 700; margin-bottom: 0.25rem;"><i class="fa-solid fa-check"></i> Financial Audit</div>
+                                    <p style="font-size: 0.78rem; color: #64748b; margin: 0;">All discounted cash flow numbers reconciled with client balance sheets.</p>
+                                </div>
+                                <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                    <div style="color: #059669; font-weight: 700; margin-bottom: 0.25rem;"><i class="fa-solid fa-check"></i> Legal Verification</div>
+                                    <p style="font-size: 0.78rem; color: #64748b; margin: 0;">General Counsel sign-off achieved on all representations and warranties.</p>
+                                </div>
+                                <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                    <div style="color: #059669; font-weight: 700; margin-bottom: 0.25rem;"><i class="fa-solid fa-check"></i> Senior Partner Signoff</div>
+                                    <p style="font-size: 0.78rem; color: #64748b; margin: 0;">Victoria Vance personal sign-off on board executive summary presentation.</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'mgr-financials': function () {
+                    return `
+                        ${renderBanner('PRACTICE REVENUE REALIZATION', 'Practice Financial Performance & P&L Statements', 'Practice profitability metrics, fee realization ratios, consultant expense reimbursements, and revenue per partner.', 'Generate P&L Report', 'Review Project Budgets', 'fa-file-invoice-dollar', 'fa-calculator')}
+                        ${renderKPIs([
+                            { label: 'PRACTICE REVENUE YTD', val: '$38.4M', icon: 'fa-file-invoice-dollar', trend: '+16.8% Above Target', positive: true },
+                            { label: 'GROSS OPERATING MARGIN', val: '42.6%', icon: 'fa-percent', trend: 'Industry Top Quartile', positive: true },
+                            { label: 'REVENUE PER PARTNER', val: '$2.74M', icon: 'fa-user-tie', trend: 'High Efficiency Matrix', positive: true },
+                            { label: 'BUDGET OVERRUNS', val: '0.4%', icon: 'fa-shield-halved', trend: 'Negligible Variance', positive: true }
+                        ])}
+
+                        <!-- Vertical Profitability Performance Comparison -->
+                        <div class="dash-card" style="margin-bottom: 2rem;">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Advisory Verticals Profit & Loss Ledger</h3>
+                                    <p class="dash-card-sub">Financial margins and realizations across specialized practice divisions</p>
+                                </div>
+                                <button type="button" class="btn-card-action"><i class="fa-solid fa-download"></i> Export Excel P&L</button>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>PRACTICE DIVISION</th><th>ALLOCATED BUDGET</th><th>REALIZED REVENUE</th><th>GROSS MARGIN</th><th>OVERHEAD EXPENSE</th><th>STATUS</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>M&A Advisory & Transatlantic Transactions</strong></td><td>$18.0M</td><td>$19.2M</td><td><strong style="color: #059669;">46.2%</strong></td><td>$2.4M</td><td><span class="badge-status-green">OUTPERFORMING</span></td></tr>
+                                        <tr><td><strong>Digital Fiduciary & Cyber Architecture</strong></td><td>$12.0M</td><td>$11.8M</td><td><strong style="color: #059669;">39.4%</strong></td><td>$1.8M</td><td><span class="badge-status-green">ON BUDGET</span></td></tr>
+                                        <tr><td><strong>Corporate Governance & ESG Compliance</strong></td><td>$8.0M</td><td>$7.4M</td><td><strong style="color: #059669;">41.0%</strong></td><td>$1.1M</td><td><span class="badge-status-green">ON BUDGET</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Expense Allocation Breakdown -->
+                        <div class="dash-card">
+                            <div class="dash-card-header"><h3 class="dash-card-title">Practice Operational Expense Allocation</h3><span class="badge-status-blue">YTD OVERHEAD: $5.3M</span></div>
+                            <div class="dash-grid-4" style="text-align: center;">
+                                <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                    <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">CONSULTANT PAYROLL</span>
+                                    <strong style="font-size: 1.25rem; color: #0f172a; display: block; margin: 0.35rem 0;">54%</strong>
+                                    <span style="font-size: 0.7rem; color: #059669;">Direct Billable</span>
+                                </div>
+                                <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                    <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">DATA & TOOLING</span>
+                                    <strong style="font-size: 1.25rem; color: #0f172a; display: block; margin: 0.35rem 0;">18%</strong>
+                                    <span style="font-size: 0.7rem; color: #64748b;">Bloomberg / PitchBook</span>
+                                </div>
+                                <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                    <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">PARTNER TRAVEL</span>
+                                    <strong style="font-size: 1.25rem; color: #0f172a; display: block; margin: 0.35rem 0;">14%</strong>
+                                    <span style="font-size: 0.7rem; color: #059669;">98% Client Reimbursable</span>
+                                </div>
+                                <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                    <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">FACILITIES & LEGAL</span>
+                                    <strong style="font-size: 1.25rem; color: #0f172a; display: block; margin: 0.35rem 0;">14%</strong>
+                                    <span style="font-size: 0.7rem; color: #64748b;">Zurich / NY Office</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'mgr-feedback': function () {
+                    return `
+                        ${renderBanner('INSTITUTIONAL SATISFACTION', 'Client Feedback & Net Promoter Scores', 'Post-engagement client appraisals, Net Promoter Score surveys, and senior partner relationship evaluations.', 'Initiate NPS Survey', 'Export Feedback Pack', 'fa-square-poll-vertical', 'fa-file-pdf')}
+                        
+                        <!-- Net Promoter Score Dial Widget -->
+                        <div class="nps-dial-panel">
+                            <div class="nps-big-score-box">
+                                <div class="nps-big-val">+78</div>
+                                <div class="nps-big-label">NPS RATING</div>
+                                <span style="font-size: 0.7rem; color: #059669; font-weight: 600;">World-Class Benchmark</span>
+                            </div>
+                            <div class="nps-distribution-wrap">
+                                <div class="nps-bar-item">
+                                    <div class="nps-bar-header"><span>PROMOTERS (Scores 9 - 10)</span><span>88% of Respondents</span></div>
+                                    <div class="nps-bar-track"><div class="nps-bar-fill-green" style="width: 88%;"></div></div>
+                                </div>
+                                <div class="nps-bar-item">
+                                    <div class="nps-bar-header"><span>PASSIVES (Scores 7 - 8)</span><span>10% of Respondents</span></div>
+                                    <div class="nps-bar-track"><div class="nps-bar-fill-yellow" style="width: 10%;"></div></div>
+                                </div>
+                                <div class="nps-bar-item">
+                                    <div class="nps-bar-header"><span>DETRACTORS (Scores 0 - 6)</span><span>2% of Respondents</span></div>
+                                    <div class="nps-bar-track"><div class="nps-bar-fill-red" style="width: 2%;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Client Testimonials Grid -->
+                        <div class="dossier-grid">
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <strong style="color: #0f172a;">Blackstone Sovereign</strong>
+                                        <span class="badge-status-green">10 / 10 PROMOTER</span>
+                                    </div>
+                                    <p style="font-style: italic; color: #334155; font-size: 0.85rem; line-height: 1.5;">"Victoria Vance and the Stackly team navigated our transatlantic M&A transaction with absolute discretion and unmatched analytical rigor."</p>
+                                </div>
+                                <div class="dossier-footer">
+                                    <span class="dossier-meta">Marcus Chen, CFO</span>
+                                    <span style="font-size: 0.72rem; color: #10b981;"><i class="fa-solid fa-star"></i> Verified</span>
+                                </div>
+                            </div>
+
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <strong style="color: #0f172a;">Aethelgard Holdings PLC</strong>
+                                        <span class="badge-status-green">10 / 10 PROMOTER</span>
+                                    </div>
+                                    <p style="font-style: italic; color: #334155; font-size: 0.85rem; line-height: 1.5;">"The board-level strategy memorandum delivered in London was the single most decisive factor in securing our restructuring consensus."</p>
+                                </div>
+                                <div class="dossier-footer">
+                                    <span class="dossier-meta">Julian Hastings, Chairman</span>
+                                    <span style="font-size: 0.72rem; color: #10b981;"><i class="fa-solid fa-star"></i> Verified</span>
+                                </div>
+                            </div>
+
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <strong style="color: #0f172a;">Zurich Private Wealth</strong>
+                                        <span class="badge-status-green">9 / 10 PROMOTER</span>
+                                    </div>
+                                    <p style="font-style: italic; color: #334155; font-size: 0.85rem; line-height: 1.5;">"Swiss fiduciary compliance was handled flawlessly. The cryptographic escrow mechanisms gave our trustees total confidence."</p>
+                                </div>
+                                <div class="dossier-footer">
+                                    <span class="dossier-meta">Claire Dupont, Legal Counsel</span>
+                                    <span style="font-size: 0.72rem; color: #10b981;"><i class="fa-solid fa-star"></i> Verified</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'mgr-research': function () {
+                    return `
+                        ${renderBanner('MACRO BRIEFING REPOSITORY', 'Industry Research & Intelligence Briefings', 'Proprietary institutional intelligence, macroeconomic forecast models, and global advisory playbooks.', 'Commission New Brief', 'Download Full Pack', 'fa-pen-nib', 'fa-download')}
+                        
+                        <!-- Dossier Grid -->
+                        <div class="dossier-grid">
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <span class="dossier-tag tag-mna">M&A STRATEGY</span>
+                                    <h4 class="dossier-title">Global M&A Liquidity Horizon 2027</h4>
+                                    <p class="dossier-desc">Deep macro assessment of cross-border private equity valuations, interest rate sensitivity, and strategic carve-out dynamics.</p>
+                                </div>
+                                <div class="dossier-footer"><span class="dossier-meta"><i class="fa-solid fa-user-pen"></i> E. Rostova</span><button class="table-btn">Download PDF</button></div>
+                            </div>
+
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <span class="dossier-tag tag-sec">CYBER SECURITY</span>
+                                    <h4 class="dossier-title">Sovereign Digital Assets & Fiduciary Vaults</h4>
+                                    <p class="dossier-desc">Institutional standards for hardware cryptography, zero-knowledge proofs, and regulatory multi-jurisdiction custody.</p>
+                                </div>
+                                <div class="dossier-footer"><span class="dossier-meta"><i class="fa-solid fa-user-pen"></i> K. Tanaka</span><button class="table-btn">Download PDF</button></div>
+                            </div>
+
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <span class="dossier-tag tag-fin">ESG INFRASTRUCTURE</span>
+                                    <h4 class="dossier-title">European Energy Transition Playbook</h4>
+                                    <p class="dossier-desc">Financial models and capital structuring for sovereign infrastructure funds participating in clean energy modernization.</p>
+                                </div>
+                                <div class="dossier-footer"><span class="dossier-meta"><i class="fa-solid fa-user-pen"></i> J. Sterling</span><button class="table-btn">Download PDF</button></div>
+                            </div>
+
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <span class="dossier-tag tag-mna">REGULATORY COMPLIANCE</span>
+                                    <h4 class="dossier-title">Cross-Border Antitrust Convergence</h4>
+                                    <p class="dossier-desc">Comparative analysis of FTC, European Commission, and UK CMA merger clearance criteria for multi-billion acquisitions.</p>
+                                </div>
+                                <div class="dossier-footer"><span class="dossier-meta"><i class="fa-solid fa-user-pen"></i> V. Vance</span><button class="table-btn">Download PDF</button></div>
+                            </div>
+
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <span class="dossier-tag tag-fin">GLOBAL WEALTH DYNAMICS</span>
+                                    <h4 class="dossier-title">Swiss Banking Privacy & Cross-Border Wealth</h4>
+                                    <p class="dossier-desc">Institutional roadmap for ultra-high-net-worth fiduciary structuring, automated exchange of information, and cross-canton taxation treaties.</p>
+                                </div>
+                                <div class="dossier-footer"><span class="dossier-meta"><i class="fa-solid fa-user-pen"></i> M. Althaus</span><button class="table-btn">Download PDF</button></div>
+                            </div>
+
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <span class="dossier-tag tag-sec">ARTIFICIAL INTELLIGENCE</span>
+                                    <h4 class="dossier-title">Autonomous Governance & Algorithmic Audit Risk</h4>
+                                    <p class="dossier-desc">Comprehensive advisory framework for enterprise generative AI adoption, model provenance validation, and EU AI Act compliance verification.</p>
+                                </div>
+                                <div class="dossier-footer"><span class="dossier-meta"><i class="fa-solid fa-user-pen"></i> D. Chen</span><button class="table-btn">Download PDF</button></div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'mgr-contracts': function () {
+                    return `
+                        ${renderBanner('LEGAL & SOW GOVERNANCE', 'Statements of Work (SOW) & Retainer Scopes', 'Engagement scope documents, advisory retainers, renewal triggers, and legal risk assessments.', 'Draft New SOW', 'Export SOW Register', 'fa-file-signature', 'fa-file-csv')}
+                        ${renderKPIs([
+                            { label: 'ACTIVE STATEMENTS OF WORK', val: '28 SOWs', icon: 'fa-file-contract', trend: 'All Formally Executed', positive: true },
+                            { label: 'RENEWALS IN NEXT 60 DAYS', val: '4 Accounts', icon: 'fa-arrows-rotate', trend: 'Discussions Commenced', positive: true },
+                            { label: 'AVG ENGAGEMENT VALUE', val: '$1.45M', icon: 'fa-money-bill-trend-up', trend: '+12% Growth per Client', positive: true },
+                            { label: 'CONTRACT DISPUTES', val: '0 Instances', icon: 'fa-handshake', trend: 'Clean Fiduciary Record', positive: true }
+                        ])}
+
+                        <!-- Detailed SOW Matrix -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Active Statements of Work (SOW) Matrix</h3>
+                                    <p class="dash-card-sub">Engagement agreements and authorized retainer limits</p>
+                                </div>
+                                <button type="button" class="btn-card-action"><i class="fa-solid fa-plus"></i> Add Contract</button>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>SOW IDENTIFIER</th><th>CLIENT ENTITY</th><th>EFFECTIVE PERIOD</th><th>ANNUAL RETAINER</th><th>SIGNATORY</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>SOW-2026-TITAN</strong></td><td>Blackstone Sovereign</td><td>Jan 2026 - Dec 2026</td><td>$1,800,000</td><td>Victoria Vance</td><td><span class="badge-status-green">ACTIVE</span></td><td><button class="table-btn">View SOW</button></td></tr>
+                                        <tr><td><strong>SOW-2026-AETHEL</strong></td><td>Aethelgard PLC</td><td>Mar 2026 - Mar 2027</td><td>$1,200,000</td><td>Julian Sterling</td><td><span class="badge-status-green">ACTIVE</span></td><td><button class="table-btn">View SOW</button></td></tr>
+                                        <tr><td><strong>SOW-2026-ZURICH</strong></td><td>Zurich Wealth</td><td>Jun 2026 - Jun 2027</td><td>$950,000</td><td>Henrik Lindqvist</td><td><span class="badge-status-green">ACTIVE</span></td><td><button class="table-btn">View SOW</button></td></tr>
+                                        <tr><td><strong>SOW-2026-NORDIC</strong></td><td>Nordic Fund</td><td>Nov 2025 - Nov 2026</td><td>€1,400,000</td><td>Elena Rostova</td><td><span class="badge-status-blue">RENEWAL PENDING</span></td><td><button class="table-btn">Renew</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'mgr-tooling': function () {
+                    return `
+                        ${renderBanner('PRACTICE OPERATIONAL WORKFLOWS', 'Practice Workflow Tooling & Executive Approvals', 'Expense authorization, partner travel requisitions, engagement tool subscriptions, and compliance checks.', 'Approve Batch Items', 'Configure Tooling', 'fa-check-double', 'fa-gears')}
+                        ${renderKPIs([
+                            { label: 'PENDING APPROVALS', val: '4 Items', icon: 'fa-clipboard-list', trend: 'Awaiting Practice Manager', positive: false },
+                            { label: 'EXPENSE REIMBURSEMENTS', val: '$42,800', icon: 'fa-receipt', trend: '98% Client Billable', positive: true },
+                            { label: 'TRAVEL REQUISITIONS', val: '3 Approved', icon: 'fa-plane', trend: 'London & Zurich Direct', positive: true },
+                            { label: 'TOOLING SERVICE UPTIME', val: '100%', icon: 'fa-check-double', trend: 'Bloomberg, PitchBook, Vault', positive: true }
+                        ])}
+
+                        <!-- Interactive Approval Inbox -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Pending Practice Authorizations & Approvals</h3>
+                                    <p class="dash-card-sub">Workflow items requiring your managerial signoff</p>
+                                </div>
+                                <button class="btn-card-action"><i class="fa-solid fa-clock-rotate-left"></i> Approval History</button>
+                            </div>
+
+                            <div class="approval-card-item">
+                                <div class="approval-details">
+                                    <h5>REQ-8821: Senior Partner Flight & Accommodation (New York &rarr; London)</h5>
+                                    <p>Julian Sterling &bull; M&A Transatlantic Closing &bull; <strong>$6,450.00</strong> &bull; Submitted Today, 09:15 EST</p>
+                                </div>
+                                <div class="approval-actions"><button class="btn-approve"><i class="fa-solid fa-check"></i> Approve</button><button class="btn-reject"><i class="fa-solid fa-xmark"></i> Reject</button></div>
+                            </div>
+
+                            <div class="approval-card-item">
+                                <div class="approval-details">
+                                    <h5>REQ-8820: PitchBook Advanced Valuation Intelligence License</h5>
+                                    <p>Elena Rostova &bull; Project Titan Practice Dataset &bull; <strong>$4,200.00</strong> &bull; Submitted Yesterday</p>
+                                </div>
+                                <div class="approval-actions"><button class="btn-approve"><i class="fa-solid fa-check"></i> Approve</button><button class="btn-reject"><i class="fa-solid fa-xmark"></i> Reject</button></div>
+                            </div>
+
+                            <div class="approval-card-item">
+                                <div class="approval-details">
+                                    <h5>REQ-8819: Swiss Fiduciary Legal Translation Protocol</h5>
+                                    <p>Kenji Tanaka &bull; Zurich Wealth Compliance &bull; <strong>$2,800.00</strong> &bull; Submitted Sep 06</p>
+                                </div>
+                                <div class="approval-actions"><button class="btn-approve"><i class="fa-solid fa-check"></i> Approve</button><button class="btn-reject"><i class="fa-solid fa-xmark"></i> Reject</button></div>
+                            </div>
+
+                            <div class="approval-card-item">
+                                <div class="approval-details">
+                                    <h5>REQ-8818: Bloomberg Terminal Q4 Professional Seat</h5>
+                                    <p>Marcus Vance &bull; Macro Diligence Desk &bull; <strong>$7,500.00</strong> &bull; Submitted Sep 04</p>
+                                </div>
+                                <div class="approval-actions"><button class="btn-approve"><i class="fa-solid fa-check"></i> Approve</button><button class="btn-reject"><i class="fa-solid fa-xmark"></i> Reject</button></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            };
+
+            // 5. Unique Renderers for 10 Client Channels
+            const clientViews = {
+                'client-overview': function () {
+                    return `
+                        ${renderBanner('AUTHORIZED ENTERPRISE CLIENT PORTAL', 'Enterprise Client Portfolio Dashboard', 'Confidential strategic advisory portfolios, executive board presentations, and transaction document rooms.', 'Export Portfolio Summary', 'Schedule Concierge Call')}
+                        ${renderKPIs([
+                            { label: 'ENTERPRISE PORTFOLIO VALUE', val: '$820M', icon: 'fa-wallet', trend: '+8.9% Capital Efficiency', positive: true },
+                            { label: 'ACTIVE ADVISORY STREAMS', val: '3 Ongoing', icon: 'fa-compass', trend: 'M&A Strategy on Track', positive: true },
+                            { label: 'VERIFIED BOARD BRIEFINGS', val: '18 Dossiers', icon: 'fa-file-shield', trend: '2 Pending Review', positive: false },
+                            { label: 'DEDICATED MANAGING PARTNER', val: 'Active', icon: 'fa-headset', trend: 'Direct Fiduciary Desk Open', positive: true }
+                        ])}
+
+                        <!-- Workstreams Progress Overview -->
+                        <div class="dash-card" style="margin-bottom: 2rem;">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Strategic Workstreams Execution Progress</h3>
+                                    <p class="dash-card-sub">Monitored corporate mandates and deliverable milestone status</p>
+                                </div>
+                                <button type="button" class="btn-card-action"><i class="fa-solid fa-arrow-up-right-from-square"></i> Full Tracker</button>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.35rem;">
+                                        <span>Project Titan: Transatlantic M&A Advisory</span>
+                                        <span style="color: #2563eb;">82% Completed</span>
+                                    </div>
+                                    <div class="progress-track"><div class="progress-fill" style="width: 82%;"></div></div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.35rem;">
+                                        <span>Q3 Institutional Liquidity Architecture</span>
+                                        <span style="color: #059669;">100% Completed (Board Ready)</span>
+                                    </div>
+                                    <div class="progress-track"><div class="progress-fill" style="width: 100%; background: #10b981;"></div></div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.35rem;">
+                                        <span>Sovereign Energy Transition Retainer</span>
+                                        <span style="color: #0ea5e9;">48% Completed (In Progress)</span>
+                                    </div>
+                                    <div class="progress-track"><div class="progress-fill" style="width: 48%;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Managing Partner Concierge Card -->
+                        <div class="concierge-profile-card">
+                            <div class="concierge-avatar-large">VV</div>
+                            <div class="concierge-meta">
+                                <h3>Victoria Vance</h3>
+                                <span class="concierge-role">Senior Managing Partner &bull; Dedicated Institutional Concierge</span>
+                                <div class="concierge-contacts">
+                                    <span><i class="fa-solid fa-phone"></i> +1 (212) 890-4410 (Direct Desk)</span>
+                                    <span><i class="fa-solid fa-envelope"></i> v.vance@stackly-group.com</span>
+                                    <span><i class="fa-solid fa-shield-halved"></i> Encrypted Direct Line</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'client-streams': function () {
+                    return `
+                        ${renderBanner('CONFIDENTIAL WORKSTREAM DESK', 'Active Advisory Streams & Step-by-Step Directives', 'Real-time multi-phase roadmap for corporate finance restructuring, M&A guidance, and capital governance.', 'Submit Inquiry', 'Request Scope Change', 'fa-paper-plane', 'fa-sliders')}
+                        
+                        <!-- Step-by-Step Phase Cards for Stream 1 -->
+                        <div class="dash-card" style="margin-bottom: 2rem;">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Project Titan: Transatlantic M&A Advisory Stream</h3>
+                                    <p class="dash-card-sub">Current Phase: Stage 4 - Regulatory Signoff & Antitrust Clearances</p>
+                                </div>
+                                <span class="badge-status-green">ON TRACK &bull; OCT 15 CLOSING</span>
+                            </div>
+                            <div class="step-pipeline-grid">
+                                <div class="step-pipeline-card">
+                                    <div class="step-number-circle" style="background:#10b981;"><i class="fa-solid fa-check"></i></div>
+                                    <h4 class="step-title">1. Inception & Scoping</h4>
+                                    <p class="step-desc">Target identification and non-disclosure executed.</p>
+                                </div>
+                                <div class="step-pipeline-card">
+                                    <div class="step-number-circle" style="background:#10b981;"><i class="fa-solid fa-check"></i></div>
+                                    <h4 class="step-title">2. Due Diligence</h4>
+                                    <p class="step-desc">482 VDR files audited and forensic model built.</p>
+                                </div>
+                                <div class="step-pipeline-card">
+                                    <div class="step-number-circle" style="background:#10b981;"><i class="fa-solid fa-check"></i></div>
+                                    <h4 class="step-title">3. Valuation Deck</h4>
+                                    <p class="step-desc">Approved unanimously by your investment committee.</p>
+                                </div>
+                                <div class="step-pipeline-card active-step">
+                                    <div class="step-number-circle">4</div>
+                                    <h4 class="step-title">4. Regulatory Signoff</h4>
+                                    <p class="step-desc">US FTC and EU Commission filings currently under review.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step-by-Step Phase Cards for Stream 2 -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Sovereign Energy Transition Retainer</h3>
+                                    <p class="dash-card-sub">Current Phase: Stage 2 - ESG Audit & Capital Modelling</p>
+                                </div>
+                                <span class="badge-status-blue">STAGE 2 &bull; NOV 01 TARGET</span>
+                            </div>
+                            <div class="step-pipeline-grid">
+                                <div class="step-pipeline-card">
+                                    <div class="step-number-circle" style="background:#10b981;"><i class="fa-solid fa-check"></i></div>
+                                    <h4 class="step-title">1. Mandate Charter</h4>
+                                    <p class="step-desc">Carbon taxonomy and benchmark criteria ratified.</p>
+                                </div>
+                                <div class="step-pipeline-card active-step">
+                                    <div class="step-number-circle">2</div>
+                                    <h4 class="step-title">2. ESG Audit</h4>
+                                    <p class="step-desc">Asset portfolio carbon accounting actively modeled.</p>
+                                </div>
+                                <div class="step-pipeline-card">
+                                    <div class="step-number-circle">3</div>
+                                    <h4 class="step-title">3. Capital Model</h4>
+                                    <p class="step-desc">Financing syndicate with Zurich wealth institutions.</p>
+                                </div>
+                                <div class="step-pipeline-card">
+                                    <div class="step-number-circle">4</div>
+                                    <h4 class="step-title">4. Board Signoff</h4>
+                                    <p class="step-desc">Statutory submission to government regulators.</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'client-vault': function () {
+                    return `
+                        ${renderBanner('CRYPTOGRAPHIC DOCUMENT VAULT', 'Fiduciary Document Vault & Classified Dossiers', 'End-to-end encrypted repository for board resolutions, sensitive valuation models, and transaction covenants.', 'Request Vault Unseal', 'Download Encrypted Zip', 'fa-key', 'fa-file-zipper')}
+                        ${renderKPIs([
+                            { label: 'ENCRYPTED FILES STORED', val: '24 Dossiers', icon: 'fa-file-shield', trend: 'Zero-Knowledge Protection', positive: true },
+                            { label: 'UNSEAL REQUESTS LOGGED', val: '0 Unscheduled', icon: 'fa-key', trend: 'Strict Biometric Challenge', positive: true },
+                            { label: 'TOTAL VAULT SIZE', val: '380 MB', icon: 'fa-hard-drive', trend: 'AES-256 GCM Encrypted', positive: true },
+                            { label: 'AUDIT TRAIL CERTIFIED', val: '100% Immutable', icon: 'fa-certificate', trend: 'Cryptographically Signed', positive: true }
+                        ])}
+
+                        <!-- Classified Dossiers File Table -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Encrypted Fiduciary Dossiers & Deal Vault</h3>
+                                    <p class="dash-card-sub">Restricted downloads available only to authorized corporate signatories</p>
+                                </div>
+                                <button class="btn-card-action"><i class="fa-solid fa-shield-halved"></i> Verify Hashes</button>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>DOSSIER TITLE</th><th>CLASSIFICATION</th><th>FILE SIZE</th><th>RELEASE DATE</th><th>CHECKSUM INTEGRITY</th><th>ACTIONS</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><i class="fa-solid fa-file-shield" style="color:#2563eb; margin-right:6px;"></i><strong>M&A Strategic Valuation Model (Titan)</strong></td><td><span class="badge-status-green">BOARD CONFIDENTIAL</span></td><td>42.8 MB</td><td>Aug 24, 2026</td><td><code style="font-size:0.75rem;">SHA-256 Verified</code></td><td><button class="table-btn">Download .AES</button></td></tr>
+                                        <tr><td><i class="fa-solid fa-file-shield" style="color:#2563eb; margin-right:6px;"></i><strong>Q3 Fiduciary Liquidity Assessment</strong></td><td><span class="badge-status-green">BOARD CONFIDENTIAL</span></td><td>18.2 MB</td><td>Sep 02, 2026</td><td><code style="font-size:0.75rem;">SHA-256 Verified</code></td><td><button class="table-btn">Download .AES</button></td></tr>
+                                        <tr><td><i class="fa-solid fa-file-shield" style="color:#2563eb; margin-right:6px;"></i><strong>Cross-Border Tax Matrix (Zurich/NY)</strong></td><td><span class="badge-status-blue">RESTRICTED</span></td><td>9.4 MB</td><td>Sep 05, 2026</td><td><code style="font-size:0.75rem;">SHA-256 Verified</code></td><td><button class="table-btn">Download .AES</button></td></tr>
+                                        <tr><td><i class="fa-solid fa-file-shield" style="color:#2563eb; margin-right:6px;"></i><strong>Sovereign Debt Restructuring Protocol</strong></td><td><span class="badge-status-green">BOARD CONFIDENTIAL</span></td><td>14.6 MB</td><td>Sep 08, 2026</td><td><code style="font-size:0.75rem;">SHA-256 Verified</code></td><td><button class="table-btn">Download .AES</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'client-memos': function () {
+                    return `
+                        ${renderBanner('EXECUTIVE PRESENTATION LIBRARY', 'Executive Board Presentations & Strategy Memos', 'Polished presentation decks prepared by senior managing partners for your board meetings and investor committees.', 'Download All Keynotes', 'Request Custom Slide', 'fa-presentation-screen', 'fa-pen-to-square')}
+                        
+                        <!-- Board Presentation Showcase Cards -->
+                        <div class="dossier-grid">
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <span class="dossier-tag tag-mna">BOARD PRESENTATION</span>
+                                    <h4 class="dossier-title">Titan Strategic Rationale & Synergies</h4>
+                                    <p class="dossier-desc">34 Executive slides prepared for the upcoming Board of Directors review. Includes talking points for Chairman.</p>
+                                </div>
+                                <div class="dossier-footer"><span class="dossier-meta"><i class="fa-solid fa-file-powerpoint"></i> Keynote + PDF</span><button class="table-btn">Download Deck</button></div>
+                            </div>
+
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <span class="dossier-tag tag-fin">INVESTMENT COMMITTEE</span>
+                                    <h4 class="dossier-title">2027 Capital Allocation Framework</h4>
+                                    <p class="dossier-desc">24 Slides analyzing liquidity deployment across European and Asian infrastructure assets.</p>
+                                </div>
+                                <div class="dossier-footer"><span class="dossier-meta"><i class="fa-solid fa-file-powerpoint"></i> PowerPoint + PDF</span><button class="table-btn">Download Deck</button></div>
+                            </div>
+
+                            <div class="dossier-card">
+                                <div class="dossier-top">
+                                    <span class="dossier-tag tag-sec">AUDIT COMMITTEE</span>
+                                    <h4 class="dossier-title">Fiduciary ESG Governance Mandate</h4>
+                                    <p class="dossier-desc">18 Slides covering regulatory compliance, carbon metrics, and statutory signoff procedures.</p>
+                                </div>
+                                <div class="dossier-footer"><span class="dossier-meta"><i class="fa-solid fa-file-powerpoint"></i> PowerPoint + PDF</span><button class="table-btn">Download Deck</button></div>
+                            </div>
+                        </div>
+
+                        <!-- Request Custom Board Slide Card -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Request Custom Presentation Slide or Memorandum</h3>
+                                    <p class="dash-card-sub">Need an urgent analysis for an ad-hoc committee? Your advisory desk responds within 4 hours.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <input type="text" class="dash-input" placeholder="Enter slide topic, target committee, and key questions..." style="flex: 1;">
+                                <button type="button" class="btn-dash-primary"><i class="fa-solid fa-paper-plane"></i> Submit Request</button>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'client-invoices': function () {
+                    return `
+                        ${renderBanner('CLIENT BILLING STATEMENTS', 'Fiduciary Billing Statements & Retainer Invoices', 'Transparent accounting of advisory hours, retainer balances, escrow receipts, and quarterly statements.', 'Download Statement', 'Wire Instructions', 'fa-receipt', 'fa-building-columns')}
+                        ${renderKPIs([
+                            { label: 'CURRENT OUTSTANDING', val: '$0.00', icon: 'fa-circle-check', trend: 'Account in Perfect Standing', positive: true },
+                            { label: 'NEXT RETAINER CYCLE', val: 'Nov 01, 2026', icon: 'fa-calendar', trend: 'Quarterly Settlement', positive: true },
+                            { label: 'BILLED YTD', val: '$1.45M', icon: 'fa-receipt', trend: 'All Invoices Paid', positive: true },
+                            { label: 'ESCROW DEPOSIT VERIFIED', val: '$250,000', icon: 'fa-vault', trend: 'JPMorgan Chase Escrow', positive: true }
+                        ])}
+
+                        <!-- Invoices History Table -->
+                        <div class="dash-card" style="margin-bottom: 2rem;">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Retainer Billing History & Formal Receipts</h3>
+                                    <p class="dash-card-sub">Cryptographically verified tax receipts and payment vouchers</p>
+                                </div>
+                                <button class="btn-card-action"><i class="fa-solid fa-download"></i> Export All</button>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>INVOICE NUMBER</th><th>PERIOD COVERED</th><th>ADVISORY MANDATE</th><th>AMOUNT</th><th>SETTLEMENT</th><th>RECEIPT</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>INV-CLI-9042</strong></td><td>Jul 01 - Sep 30, 2026</td><td>Q3 Advisory Retainer</td><td>$450,000</td><td><span class="badge-status-green">PAID IN FULL</span></td><td><button class="table-btn">Download PDF</button></td></tr>
+                                        <tr><td><strong>INV-CLI-9041</strong></td><td>Apr 01 - Jun 30, 2026</td><td>Q2 Advisory Retainer</td><td>$450,000</td><td><span class="badge-status-green">PAID IN FULL</span></td><td><button class="table-btn">Download PDF</button></td></tr>
+                                        <tr><td><strong>INV-CLI-9040</strong></td><td>Jan 01 - Mar 31, 2026</td><td>Q1 Advisory Retainer</td><td>$550,000</td><td><span class="badge-status-green">PAID IN FULL</span></td><td><button class="table-btn">Download PDF</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Wire Transfer Instructions Card -->
+                        <div class="dash-card">
+                            <div class="dash-card-header"><h3 class="dash-card-title">Official Fiduciary Custodial Wire Coordinates</h3><span class="badge-status-green">CONFIRMED 2026</span></div>
+                            <div class="dash-grid-2">
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">Americas Account (USD)</h4>
+                                    <div style="font-size: 0.8rem; color: #475569; line-height: 1.6;">
+                                        <div>Bank: <strong>JPMorgan Chase Bank, N.A., New York</strong></div>
+                                        <div>SWIFT / BIC: <strong>CHASUS33</strong></div>
+                                        <div>ABA Routing: <strong>021000021</strong></div>
+                                        <div>Beneficiary: <strong>Stackly Fiduciary Advisory Trust Escrow</strong></div>
+                                    </div>
+                                </div>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">Swiss Fiduciary Account (CHF / EUR)</h4>
+                                    <div style="font-size: 0.8rem; color: #475569; line-height: 1.6;">
+                                        <div>Bank: <strong>UBS Switzerland AG, Bahnhofstrasse 45, Zurich</strong></div>
+                                        <div>SWIFT / BIC: <strong>UBSWCHZH</strong></div>
+                                        <div>IBAN: <strong>CH93 0023 4567 8901 2345 6</strong></div>
+                                        <div>Beneficiary: <strong>Stackly Fiduciary Wealth S.A.</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'client-partner': function () {
+                    return `
+                        ${renderBanner('EXECUTIVE FIDUCIARY DESK', 'Managing Partner Concierge & Fiduciary Hotline', 'Direct encrypted line to your designated managing partner and senior advisory engagement directors.', 'Request Urgent Call', 'Dispatch Encrypted Memo', 'fa-phone', 'fa-paper-plane')}
+                        
+                        <!-- Dedicated Partner Large Profile Card -->
+                        <div class="concierge-profile-card">
+                            <div class="concierge-avatar-large">VV</div>
+                            <div class="concierge-meta">
+                                <h3>Victoria Vance</h3>
+                                <span class="concierge-role">Senior Managing Partner &bull; Global Cross-Border Advisory Lead</span>
+                                <p style="color: #cbd5e1; font-size: 0.86rem; line-height: 1.5; margin-bottom: 1rem;">Directly leading your corporate governance and M&A execution desk. Over 20 years of advising sovereign entities and Fortune 500 boards.</p>
+                                <div class="concierge-contacts">
+                                    <span><i class="fa-solid fa-phone"></i> +1 (212) 890-4410 (Direct Line)</span>
+                                    <span><i class="fa-solid fa-envelope"></i> v.vance@stackly-group.com</span>
+                                    <span><i class="fa-solid fa-location-dot"></i> New York & London</span>
+                                    <span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle" style="font-size: 0.55rem;"></i> CURRENTLY ACTIVE</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Senior Advisory Roster Cards -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Designated Senior Advisory Partners on Retainer</h3>
+                                    <p class="dash-card-sub">Your dedicated multi-disciplinary partner team available 24/7</p>
+                                </div>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>ADVISORY PARTNER</th><th>INSTITUTIONAL TITLE</th><th>PRIMARY PRACTICE</th><th>SECURE PHONE</th><th>OFFICE LOCATION</th><th>ACTIONS</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>Victoria Vance</strong></td><td>Senior Managing Partner</td><td>Strategic M&A</td><td>+1 (212) 890-4410</td><td>New York HQ</td><td><button class="table-btn">Direct Call</button></td></tr>
+                                        <tr><td><strong>Julian Sterling</strong></td><td>Managing Director</td><td>Corporate Finance</td><td>+44 (20) 7946-0912</td><td>London Office</td><td><button class="table-btn">Direct Call</button></td></tr>
+                                        <tr><td><strong>Henrik Lindqvist</strong></td><td>Managing Partner</td><td>Swiss Wealth Desk</td><td>+41 (44) 668-9014</td><td>Zurich Office</td><td><button class="table-btn">Direct Call</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'client-vdr': function () {
+                    return `
+                        ${renderBanner('VIRTUAL DATA ROOM (VDR)', 'Project Titan Virtual Data Room & Deal Repository', 'Classified transaction files, audited dynamic watermarking, and accredited third-party due diligence logs.', 'Upload Due Diligence', 'Audit Room Access', 'fa-cloud-arrow-up', 'fa-fingerprint')}
+                        ${renderKPIs([
+                            { label: 'ACTIVE DEAL ROOMS', val: 'Project Titan', icon: 'fa-folder-tree', trend: 'Restricted Multi-Party Access', positive: true },
+                            { label: 'DUE DILIGENCE FILES', val: '482 Documents', icon: 'fa-file-lines', trend: '100% Watermarked & Logged', positive: true },
+                            { label: 'DYNAMIC WATERMARKING', val: 'ENFORCED', icon: 'fa-fingerprint', trend: 'User IP & Timestamp Burned', positive: true },
+                            { label: 'AUTHORIZED OFFICERS', val: '6 Individuals', icon: 'fa-users', trend: 'Board Nominated Credentials', positive: true }
+                        ])}
+
+                        <!-- Watermarked Deal Folders Grid -->
+                        <div class="dash-card" style="margin-bottom: 2rem;">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Virtual Data Room Deal Folders</h3>
+                                    <p class="dash-card-sub">All downloads dynamically burned with forensic watermark</p>
+                                </div>
+                                <span class="badge-status-green">TIER 1 DEAL ACCESS</span>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>FOLDER CATEGORY</th><th>DOCUMENTS</th><th>LAST REVISED</th><th>SECURITY TIER</th><th>FORENSIC CODE</th><th>ACTIONS</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>01. Corporate Governance & Charters</strong></td><td>42 Files</td><td>Aug 28, 2026</td><td><span class="badge-status-green">TIER 1</span></td><td>WM-CLI-01</td><td><button class="table-btn">Enter Folder</button></td></tr>
+                                        <tr><td><strong>02. Audited Financial Statements (5 Yrs)</strong></td><td>86 Files</td><td>Aug 24, 2026</td><td><span class="badge-status-green">TIER 1</span></td><td>WM-CLI-02</td><td><button class="table-btn">Enter Folder</button></td></tr>
+                                        <tr><td><strong>03. Intellectual Property & Patents</strong></td><td>118 Files</td><td>Aug 19, 2026</td><td><span class="badge-status-green">TIER 1</span></td><td>WM-CLI-03</td><td><button class="table-btn">Enter Folder</button></td></tr>
+                                        <tr><td><strong>04. Regulatory Clearances (Antitrust)</strong></td><td>34 Files</td><td>Sep 01, 2026</td><td><span class="badge-status-green">TIER 1</span></td><td>WM-CLI-04</td><td><button class="table-btn">Enter Folder</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Forensic Watermark Simulator Card -->
+                        <div class="watermark-simulator-wrap">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Dynamic Forensic Watermarking Simulator</h3>
+                                    <p class="dash-card-sub">Sample visualization of dynamic forensic marks embedded on all documents opened by your account</p>
+                                </div>
+                                <span class="badge-status-blue">LIVE SIMULATION</span>
+                            </div>
+                            <div class="watermark-sheet">
+                                <div class="watermark-diagonal-text">CONFIDENTIAL &bull; ${currentEmail.toUpperCase()} &bull; 198.51.100.44 &bull; STACKLY VDR</div>
+                                <div class="watermark-doc-content">
+                                    <h4>Project Titan - Transatlantic Acquisition Agreement (Draft)</h4>
+                                    <p>THIS AGREEMENT is entered into between Blackstone Sovereign Capital and target entity shareholders under the exclusive jurisdiction of the State of New York and Swiss Fiduciary Chambers.</p>
+                                    <div style="display: inline-flex; gap: 0.5rem;">
+                                        <span class="badge-status-green"><i class="fa-solid fa-lock"></i> AES-256 Watermark Burned</span>
+                                        <span class="badge-status-blue"><i class="fa-solid fa-fingerprint"></i> IP Forensic Logged</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'client-certifications': function () {
+                    return `
+                        ${renderBanner('ACCREDITATION REGISTRY', 'Regulatory Compliance & Fiduciary Accreditations', 'Certified proof of fiduciary compliance, institutional audit attestations, and statutory certifications.', 'Download All Seals', 'Request Legal Opinion', 'fa-certificate', 'fa-file-shield')}
+                        
+                        <!-- 4 Institutional Certification Seals Cards -->
+                        <div class="cert-cards-grid">
+                            <div class="cert-seal-card">
+                                <i class="fa-solid fa-certificate cert-seal-icon"></i>
+                                <h4 class="cert-seal-title">PwC Fiduciary Audit</h4>
+                                <p class="cert-seal-desc">Unqualified clean opinion on sovereign custody and fiduciary advisory processes.</p>
+                                <span class="badge-status-green">VERIFIED 2026</span>
+                            </div>
+                            <div class="cert-seal-card">
+                                <i class="fa-solid fa-shield-halved cert-seal-icon"></i>
+                                <h4 class="cert-seal-title">EY SOC 2 Type II</h4>
+                                <p class="cert-seal-desc">Highest level attestation for security, confidentiality, and data privacy controls.</p>
+                                <span class="badge-status-green">VERIFIED 2026</span>
+                            </div>
+                            <div class="cert-seal-card">
+                                <i class="fa-solid fa-vault cert-seal-icon"></i>
+                                <h4 class="cert-seal-title">Swiss FINMA Opinion</h4>
+                                <p class="cert-seal-desc">Full regulatory standing for cross-border banking confidentiality in Zurich.</p>
+                                <span class="badge-status-green">VERIFIED 2026</span>
+                            </div>
+                            <div class="cert-seal-card">
+                                <i class="fa-solid fa-award cert-seal-icon"></i>
+                                <h4 class="cert-seal-title">Institutional ESG AA+</h4>
+                                <p class="cert-seal-desc">Top decile global ranking for sustainable corporate governance and fiduciary duty.</p>
+                                <span class="badge-status-green">VERIFIED 2026</span>
+                            </div>
+                        </div>
+
+                        <!-- Formal Attestation Dossiers Card -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Auditor Attestation Letters & Opinion Letters</h3>
+                                    <p class="dash-card-sub">Signed letters suitable for submission to your regulatory bodies and external auditors</p>
+                                </div>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>ATTESTATION DOCUMENT</th><th>ISSUING AUDITOR</th><th>VALIDITY PERIOD</th><th>ASSURANCE LEVEL</th><th>ACTIONS</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>Annual Institutional Audit Opinion (2026)</strong></td><td>PricewaterhouseCoopers LLP</td><td>Jan 2026 - Dec 2026</td><td><span class="badge-status-green">UNQUALIFIED (CLEAN)</span></td><td><button class="table-btn">Download PDF</button></td></tr>
+                                        <tr><td><strong>SOC 2 Type II Final Report</strong></td><td>Ernst & Young LLP</td><td>Valid Through 2026</td><td><span class="badge-status-green">FULL REASONABLE ASSURANCE</span></td><td><button class="table-btn">Download PDF</button></td></tr>
+                                        <tr><td><strong>Swiss Banking Act Article 47 Compliance</strong></td><td>Bär & Karrer AG, Zurich</td><td>Current</td><td><span class="badge-status-green">STATUTORY COMPLIANCE</span></td><td><button class="table-btn">Download PDF</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                'client-security': function () {
+                    return `
+                        ${renderBanner('CLIENT SECURITY SETTINGS', 'Enterprise Organization Settings & Authorized Officers', 'Manage authorized corporate executives with access to your confidential client vault and due diligence data rooms.', 'Add Authorized Officer', 'Update Security Policy', 'fa-user-plus', 'fa-shield-halved')}
+                        ${renderKPIs([
+                            { label: 'AUTHORIZED BOARD SEATS', val: '5 Executives', icon: 'fa-user-check', trend: 'Full Fiduciary Access', positive: true },
+                            { label: 'HARDWARE MFA ENFORCED', val: '100% Active', icon: 'fa-key', trend: 'YubiKey / Biometric Passkeys', positive: true },
+                            { label: 'IP RESTRICTION PROTOCOL', val: 'Corporate VPN', icon: 'fa-network-wired', trend: 'Whitelist Active', positive: true },
+                            { label: 'AUTOMATIC SESSION SHIELD', val: '15 Min Inactivity', icon: 'fa-hourglass', trend: 'Strict Privacy Protection', positive: true }
+                        ])}
+
+                        <!-- Authorized Officers Table -->
+                        <div class="dash-card" style="margin-bottom: 2rem;">
+                            <div class="dash-card-header">
+                                <div>
+                                    <h3 class="dash-card-title">Authorized Corporate Officers with Vault Access</h3>
+                                    <p class="dash-card-sub">Executives permitted to inspect confidential portfolios and sign directives</p>
+                                </div>
+                                <div class="dash-card-actions"><button class="btn-card-action"><i class="fa-solid fa-user-shield"></i> Manage Roles</button></div>
+                            </div>
+                            <div class="dash-table-wrap">
+                                <table class="dash-table">
+                                    <thead><tr><th>EXECUTIVE NAME</th><th>CORPORATE TITLE</th><th>AUTHORIZATION LEVEL</th><th>2FA METHOD</th><th>LAST ACCESS</th><th>ACTIONS</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>Eleanor Vance</strong></td><td>Chief Executive Officer</td><td><span class="badge-status-green">Level 1 (Full Discretion)</span></td><td>Hardware YubiKey</td><td>Just now</td><td><button class="table-btn">Modify</button></td></tr>
+                                        <tr><td><strong>David Sterling</strong></td><td>Chief Financial Officer</td><td><span class="badge-status-green">Level 1 (Full Discretion)</span></td><td>Hardware YubiKey</td><td>2 hours ago</td><td><button class="table-btn">Modify</button></td></tr>
+                                        <tr><td><strong>Claire Dupont</strong></td><td>General Counsel</td><td><span class="badge-status-blue">Level 2 (Legal Only)</span></td><td>Biometric Passkey</td><td>Yesterday</td><td><button class="table-btn">Modify</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Organization Security Preferences -->
+                        <div class="dash-card">
+                            <div class="dash-card-header"><h3 class="dash-card-title">Client Organization Security Preferences</h3><span class="badge-status-green">HARDENED</span></div>
+                            <div class="dash-grid-3">
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <strong style="font-size: 0.9rem; color: #0f172a; display: block; margin-bottom: 0.25rem;">Multi-Factor Authentication</strong>
+                                    <p style="font-size: 0.76rem; color: #64748b; margin-bottom: 0.75rem;">Mandate hardware keys (YubiKey / WebAuthn) for all board members.</p>
+                                    <span class="badge-status-green">STRICTLY ENFORCED</span>
+                                </div>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <strong style="font-size: 0.9rem; color: #0f172a; display: block; margin-bottom: 0.25rem;">IP Geofence Restriction</strong>
+                                    <p style="font-size: 0.76rem; color: #64748b; margin-bottom: 0.75rem;">Block access outside authorized headquarters CIDR range.</p>
+                                    <span class="badge-status-green">VPN WHITELIST ON</span>
+                                </div>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
+                                    <strong style="font-size: 0.9rem; color: #0f172a; display: block; margin-bottom: 0.25rem;">Session Auto-Lock</strong>
+                                    <p style="font-size: 0.76rem; color: #64748b; margin-bottom: 0.75rem;">Automatically lock viewport after 15 minutes of inactivity.</p>
+                                    <span class="badge-status-green">15 MIN LOCK</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            };
+
+            // Logout View (Common across all 3 roles)
+            function renderLogoutView() {
+                return `
+                    <div class="dash-welcome-banner" style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);">
+                        <div class="banner-text">
+                            <div class="banner-eyebrow"><span class="status-pulse-green"></span><span>SESSION MANAGEMENT</span></div>
+                            <h1 class="banner-title">Sign Out / Terminate Active Session</h1>
+                            <p class="banner-sub">Safely disconnect from the Stackly Fiduciary Portal and invalidate encrypted browser tokens.</p>
+                        </div>
+                    </div>
+                    <div class="dash-card" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 3rem 2rem;">
+                        <div style="font-size: 3rem; color: #f87171; margin-bottom: 1rem;"><i class="fa-solid fa-right-from-bracket"></i></div>
+                        <h3 style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;">Confirm Disconnect?</h3>
+                        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 2rem;">You are currently signed in as <strong>${currentEmail}</strong> with <strong>${currentRole.toUpperCase()}</strong> privileges. Disconnecting will clear your local security token.</p>
+                        <div style="display: flex; gap: 1rem; justify-content: center;">
+                            <button type="button" class="btn btn-dash-primary" id="btn-confirm-logout" style="background: #dc2626;"><i class="fa-solid fa-power-off"></i> Disconnect & Sign Out</button>
+                            <button type="button" class="btn btn-card-action" id="btn-cancel-logout">Cancel & Stay</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 6. Sidebar Channel Definitions for the 3 Roles
+            const sidebars = {
+                Admin: [
+                    { id: 'admin-overview', name: 'Executive Overview', icon: 'fa-chart-pie' },
+                    { id: 'admin-users', name: 'User & Role Management', icon: 'fa-users-gear' },
+                    { id: 'admin-security', name: 'Fiduciary Vault & Security', icon: 'fa-shield-halved' },
+                    { id: 'admin-matrix', name: 'Global Practice Matrix', icon: 'fa-globe' },
+                    { id: 'admin-audits', name: 'Financial Audits & Billings', icon: 'fa-file-invoice-dollar' },
+                    { id: 'admin-governance', name: 'Advisory Governance', icon: 'fa-landmark' },
+                    { id: 'admin-telemetry', name: 'System Logs & Telemetry', icon: 'fa-terminal' },
+                    { id: 'admin-documents', name: 'Document Repositories', icon: 'fa-folder-closed' },
+                    { id: 'admin-settings', name: 'Platform Settings & API', icon: 'fa-sliders' },
+                    { id: 'admin-logout', name: 'Sign Out / Disconnect', icon: 'fa-right-from-bracket', isLogout: true }
+                ],
+                Manager: [
+                    { id: 'mgr-overview', name: 'Practice Operations Hub', icon: 'fa-briefcase' },
+                    { id: 'mgr-deals', name: 'Client Engagements & M&A', icon: 'fa-handshake' },
+                    { id: 'mgr-team', name: 'Team Rosters & Utilization', icon: 'fa-user-group' },
+                    { id: 'mgr-deliverables', name: 'Deliverables & Milestones', icon: 'fa-list-check' },
+                    { id: 'mgr-financials', name: 'Practice Financials & P&L', icon: 'fa-chart-line' },
+                    { id: 'mgr-feedback', name: 'Client Feedback & NPS', icon: 'fa-star' },
+                    { id: 'mgr-research', name: 'Research & Intelligence Dossiers', icon: 'fa-book-open-reader' },
+                    { id: 'mgr-contracts', name: 'Contract Review & Scopes', icon: 'fa-file-signature' },
+                    { id: 'mgr-tooling', name: 'Practice Tooling & Approvals', icon: 'fa-gears' },
+                    { id: 'mgr-logout', name: 'Sign Out / Disconnect', icon: 'fa-right-from-bracket', isLogout: true }
+                ],
+                Client: [
+                    { id: 'client-overview', name: 'Client Portfolio Dashboard', icon: 'fa-chart-column' },
+                    { id: 'client-streams', name: 'Active Advisory Streams', icon: 'fa-compass' },
+                    { id: 'client-vault', name: 'Confidential Vault & Dossiers', icon: 'fa-vault' },
+                    { id: 'client-memos', name: 'Board Presentations & Memos', icon: 'fa-chalkboard-user' },
+                    { id: 'client-invoices', name: 'Fiduciary Invoices & Retainers', icon: 'fa-receipt' },
+                    { id: 'client-partner', name: 'Direct Partner Access', icon: 'fa-headset' },
+                    { id: 'client-vdr', name: 'Transaction Room & VDR', icon: 'fa-lock' },
+                    { id: 'client-certifications', name: 'Compliance Certifications', icon: 'fa-certificate' },
+                    { id: 'client-security', name: 'Enterprise Account & Security', icon: 'fa-user-shield' },
+                    { id: 'client-logout', name: 'Sign Out / Disconnect', icon: 'fa-right-from-bracket', isLogout: true }
+                ]
+            };
+
+            const roleViews = currentRole === 'Admin' ? adminViews : (currentRole === 'Client' ? clientViews : managerViews);
+            const currentSidebarItems = sidebars[currentRole] || sidebars.Manager;
+
+            // 7. Master View Switcher Function
+            function switchView(channelId) {
+                if (channelId.includes('logout')) {
+                    localStorage.removeItem('stackly_auth');
+                    sessionStorage.clear();
+                    window.location.href = 'signin.html';
+                    return;
+                } else if (roleViews[channelId]) {
+                    viewportContainer.innerHTML = roleViews[channelId]();
+                }
+
+                // Scroll smoothly to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // 8. Render Sidebar Items & Attach View Switch Listeners
+            const navListEl = document.getElementById('sidebar-nav-list');
+            navListEl.innerHTML = '';
+
+            currentSidebarItems.forEach(function (item, index) {
+                const li = document.createElement('li');
+                li.className = 'dash-nav-item' + (index === 0 ? ' active' : '') + (item.isLogout ? ' logout-nav-item' : '');
+
+                const a = document.createElement('a');
+                a.href = item.isLogout ? 'signin.html' : ('#' + item.id);
+                a.className = 'dash-nav-link' + (item.isLogout ? ' dash-logout' : '');
+
+                a.innerHTML = `
+                    <span class="nav-item-left">
+                        <i class="fa-solid ${item.icon}"></i>
+                        <span class="nav-item-title">${item.name}</span>
+                    </span>
+                `;
+
+                a.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    if (item.isLogout) {
+                        localStorage.removeItem('stackly_auth');
+                        sessionStorage.clear();
+                        window.location.href = 'signin.html';
+                        return;
+                    }
+                    document.querySelectorAll('.dash-nav-item').forEach(el => el.classList.remove('active'));
+                    li.classList.add('active');
+                    switchView(item.id);
+                    closeSidebar();
+                });
+
+                li.appendChild(a);
+                navListEl.appendChild(li);
+            });
+
+
+            // Initial view load
+            switchView(currentSidebarItems[0].id);
+
+            // 9. Mobile Drawer Toggle Behavior
+            const menuToggleBtn = document.getElementById('dashboard-menu-toggle');
+            const sidebarEl = document.getElementById('dash-sidebar');
+            const backdropEl = document.getElementById('sidebar-backdrop');
+            const closeBtn = document.getElementById('sidebar-close-btn');
+
+            function openSidebar() {
+                sidebarEl.classList.add('mobile-open');
+                backdropEl.classList.add('active');
+                document.documentElement.classList.add('sidebar-locked');
+                document.body.classList.add('sidebar-locked');
+                document.documentElement.style.overflow = 'hidden';
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeSidebar() {
+                sidebarEl.classList.remove('mobile-open');
+                backdropEl.classList.remove('active');
+                document.documentElement.classList.remove('sidebar-locked');
+                document.body.classList.remove('sidebar-locked');
+                document.documentElement.style.overflow = '';
+                document.body.style.overflow = '';
+            }
+
+            if (menuToggleBtn) menuToggleBtn.addEventListener('click', openSidebar);
+            if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+            if (backdropEl) {
+                backdropEl.addEventListener('click', closeSidebar);
+                backdropEl.addEventListener('touchmove', function (e) {
+                    e.preventDefault();
+                }, { passive: false });
+            }
+
+            // 10. Brand Logo Click: Always return to the first page/channel in the current dashboard
+            document.querySelectorAll('.brand-home-link').forEach(function (logoLink) {
+                logoLink.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    if (currentSidebarItems && currentSidebarItems.length > 0) {
+                        const firstChannelId = currentSidebarItems[0].id;
+                        document.querySelectorAll('.dash-nav-item').forEach((el, idx) => {
+                            el.classList.toggle('active', idx === 0);
+                        });
+                        switchView(firstChannelId);
+                        closeSidebar();
+                    }
+                });
+            });
+
+            // 11. Topbar Logout Button
+            const topbarLogoutBtn = document.getElementById('dash-logout-btn');
+            if (topbarLogoutBtn) {
+                topbarLogoutBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    localStorage.removeItem('stackly_auth');
+                    window.location.href = 'signin.html';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

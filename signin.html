@@ -83,39 +83,13 @@
                             <i class="fa-regular fa-eye"></i>
                         </button>
                     </div>
-
-                    <!-- Password Requirement Live Checklist -->
-                    <div class="password-criteria-box">
-                        <div class="criteria-header">PASSWORD REQUIREMENTS</div>
-                        <div class="password-criteria-grid">
-                            <div class="criteria-item" id="crit-len">
-                                <i class="fa-regular fa-circle"></i>
-                                <span>8+ characters</span>
-                            </div>
-                            <div class="criteria-item" id="crit-upper">
-                                <i class="fa-regular fa-circle"></i>
-                                <span>Uppercase (A-Z)</span>
-                            </div>
-                            <div class="criteria-item" id="crit-lower">
-                                <i class="fa-regular fa-circle"></i>
-                                <span>Lowercase (a-z)</span>
-                            </div>
-                            <div class="criteria-item" id="crit-num">
-                                <i class="fa-regular fa-circle"></i>
-                                <span>Number (0-9)</span>
-                            </div>
-                            <div class="criteria-item" id="crit-sym">
-                                <i class="fa-regular fa-circle"></i>
-                                <span>Symbol (!@#$...)</span>
-                            </div>
-                        </div>
-                    </div>
                     <div class="field-feedback" id="password-feedback"></div>
                 </div>
 
+
                 <!-- Remember Me Checkbox -->
                 <div class="remember-row">
-                    <input type="checkbox" id="remember" class="remember-checkbox" checked>
+                    <input type="checkbox" id="remember" class="remember-checkbox">
                     <label for="remember" class="remember-label">Keep me authenticated for 30 days</label>
                 </div>
 
@@ -232,47 +206,17 @@
                 });
             }
 
-            // 3. Real-Time Password Criteria Validation
-            const critLen = document.getElementById('crit-len');
-            const critUpper = document.getElementById('crit-upper');
-            const critLower = document.getElementById('crit-lower');
-            const critNum = document.getElementById('crit-num');
-            const critSym = document.getElementById('crit-sym');
-
-            function updateCriteria(element, isValid) {
-                const icon = element.querySelector('i');
-                if (isValid) {
-                    element.classList.add('valid');
-                    icon.className = 'fa-solid fa-circle-check';
-                } else {
-                    element.classList.remove('valid');
-                    icon.className = 'fa-regular fa-circle';
-                }
-            }
-
-            function validatePassword(val) {
-                const hasLen = val.length >= 8;
-                const hasUpper = /[A-Z]/.test(val);
-                const hasLower = /[a-z]/.test(val);
-                const hasNum = /[0-9]/.test(val);
-                const hasSym = /[^A-Za-z0-9]/.test(val);
-
-                updateCriteria(critLen, hasLen);
-                updateCriteria(critUpper, hasUpper);
-                updateCriteria(critLower, hasLower);
-                updateCriteria(critNum, hasNum);
-                updateCriteria(critSym, hasSym);
-
-                return hasLen && hasUpper && hasLower && hasNum && hasSym;
-            }
-
+            // 3. Password Input Handling
             passwordInput.addEventListener('input', function () {
-                const isPassValid = validatePassword(this.value);
-                if (isPassValid) {
-                    passwordFeedback.textContent = '';
-                    passwordFeedback.className = 'field-feedback';
+                if (this.value.length > 0) {
+                    if (passwordFeedback) {
+                        passwordFeedback.textContent = '';
+                        passwordFeedback.className = 'field-feedback';
+                    }
                     this.classList.remove('input-invalid');
                     this.classList.add('input-valid');
+                } else {
+                    this.classList.remove('input-valid');
                 }
             });
 
@@ -319,20 +263,18 @@
                 }
 
                 // Validate Password
-                const isPassValid = validatePassword(password);
                 if (!password) {
-                    passwordFeedback.textContent = 'Password is required.';
-                    passwordFeedback.className = 'field-feedback error';
-                    passwordInput.classList.add('input-invalid');
-                    valid = false;
-                } else if (!isPassValid) {
-                    passwordFeedback.textContent = 'Password must meet all 5 requirements above (8+ characters, uppercase, lowercase, number, symbol).';
-                    passwordFeedback.className = 'field-feedback error';
+                    if (passwordFeedback) {
+                        passwordFeedback.textContent = 'Password is required.';
+                        passwordFeedback.className = 'field-feedback error';
+                    }
                     passwordInput.classList.add('input-invalid');
                     valid = false;
                 } else {
-                    passwordFeedback.textContent = '';
-                    passwordFeedback.className = 'field-feedback';
+                    if (passwordFeedback) {
+                        passwordFeedback.textContent = '';
+                        passwordFeedback.className = 'field-feedback';
+                    }
                     passwordInput.classList.remove('input-invalid');
                 }
 

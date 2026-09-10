@@ -3439,12 +3439,17 @@ body.auth-page {
 .services-stat-item {
     display: flex;
     flex-direction: column;
-    padding: 0 1rem;
-    border-right: 1px solid #f1f5f9;
+    padding-left: 1.25rem;
+    border-left: 1px solid #cbd5e1;
+    transition: border-color 0.25s ease;
 }
 
-.services-stat-item:last-child {
-    border-right: none;
+.services-stat-item:first-child {
+    border-left: 2.5px solid #0f172a;
+}
+
+.services-stat-item:hover {
+    border-left-color: #0f172a;
 }
 
 .services-stat-val {
@@ -4025,9 +4030,6 @@ body.auth-page {
         gap: 2rem;
     }
 
-    .services-stat-item {
-        border-right: none;
-    }
 }
 
 @media (max-width: 860px) {
@@ -4203,12 +4205,17 @@ body.auth-page {
 .teams-stat-item {
     display: flex;
     flex-direction: column;
-    padding: 0 1rem;
-    border-right: 1px solid #f1f5f9;
+    padding-left: 1.25rem;
+    border-left: 1px solid #cbd5e1;
+    transition: border-color 0.25s ease;
 }
 
-.teams-stat-item:last-child {
-    border-right: none;
+.teams-stat-item:first-child {
+    border-left: 2.5px solid #0f172a;
+}
+
+.teams-stat-item:hover {
+    border-left-color: #0f172a;
 }
 
 .teams-stat-val {
@@ -4570,31 +4577,68 @@ body.auth-page {
 .join-pillars-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1.75rem 0;
-    margin-bottom: 2.5rem;
+    gap: 1.25rem;
+    border-top: none;
+    border-bottom: none;
+    padding: 0;
+    margin: 2rem 0 2.5rem 0;
+    align-items: stretch;
 }
 
 .join-pillar-item {
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(71, 85, 105, 0.5);
+    border-radius: 10px;
+    padding: 1.35rem 1.15rem;
+    box-sizing: border-box;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.join-pillar-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: linear-gradient(90deg, #38bdf8, #34d399);
+    transition: width 0.35s ease;
+}
+
+.join-pillar-item:hover {
+    background: rgba(30, 41, 59, 0.85);
+    border-color: #38bdf8;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -6px rgba(2, 132, 199, 0.25);
+}
+
+.join-pillar-item:hover::before {
+    width: 100%;
 }
 
 .join-pillar-title {
     font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 1.2px;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
     color: #38bdf8;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
+    min-height: 2.1rem;
+    display: flex;
+    align-items: center;
+    line-height: 1.3;
 }
 
 .join-pillar-text {
     font-size: 0.82rem;
     color: #cbd5e1;
-    line-height: 1.45;
+    line-height: 1.5;
     margin-bottom: 0;
 }
 
@@ -4683,9 +4727,6 @@ body.auth-page {
         gap: 2rem;
     }
 
-    .teams-stat-item {
-        border-right: none;
-    }
 }
 
 @media (max-width: 860px) {
@@ -4816,12 +4857,13 @@ body.auth-page {
 .insights-stat-card {
     display: flex;
     flex-direction: column;
-    padding-right: 1.5rem;
-    border-right: 1px solid #f1f5f9;
+    padding-left: 1.25rem;
+    border-left: 2px solid #0f172a;
+    transition: border-color 0.25s ease;
 }
 
-.insights-stat-card:last-child {
-    border-right: none;
+.insights-stat-card:hover {
+    border-left-color: #2563eb;
 }
 
 .insights-stat-val {
@@ -11069,8 +11111,6 @@ body.auth-page {
 .tl-content,
 .expert-card,
 .collab-card,
-.join-pillar-item,
-.insights-stat-card,
 .flagship-dossier-card,
 .memo-card,
 .vector-card,
@@ -11119,8 +11159,6 @@ body.auth-page {
 .tl-content::before,
 .expert-card::before,
 .collab-card::before,
-.join-pillar-item::before,
-.insights-stat-card::before,
 .flagship-dossier-card::before,
 .memo-card::before,
 .vector-card::before,
@@ -11167,8 +11205,6 @@ body.auth-page {
 .tl-content::after,
 .expert-card::after,
 .collab-card::after,
-.join-pillar-item::after,
-.insights-stat-card::after,
 .flagship-dossier-card::after,
 .memo-card::after,
 .vector-card::after,
@@ -11220,8 +11256,6 @@ body.auth-page {
 .tl-content:hover,
 .expert-card:hover,
 .collab-card:hover,
-.join-pillar-item:hover,
-.insights-stat-card:hover,
 .flagship-dossier-card:hover,
 .memo-card:hover,
 .vector-card:hover,
@@ -11261,8 +11295,6 @@ body.auth-page {
 .tl-content:hover::before,
 .expert-card:hover::before,
 .collab-card:hover::before,
-.join-pillar-item:hover::before,
-.insights-stat-card:hover::before,
 .flagship-dossier-card:hover::before,
 .memo-card:hover::before,
 .vector-card:hover::before,
@@ -11300,8 +11332,6 @@ body.auth-page {
 .tl-content:hover::after,
 .expert-card:hover::after,
 .collab-card:hover::after,
-.join-pillar-item:hover::after,
-.insights-stat-card:hover::after,
 .flagship-dossier-card:hover::after,
 .memo-card:hover::after,
 .vector-card:hover::after,

@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <!-- Top Scroll Progress Indicator -->
+    <div class="scroll-progress-bar" id="scrollProgressBar"></div>
 
     <!-- Navbar -->
     <nav class="navbar">
@@ -122,21 +124,25 @@
             <div class="stats-grid">
                 <div class="stat-item">
                     <div class="stat-icon"><i class="fa-solid fa-trophy"></i></div>
+                    <div class="stat-number" data-count="98.4" data-suffix="%">98.4%</div>
                     <h4>Proven Excellence</h4>
                     <p>Decades of collective experience delivering transformative results for Fortune 500s.</p>
                 </div>
                 <div class="stat-item">
                     <div class="stat-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                    <div class="stat-number" data-count="50" data-prefix="$" data-suffix="B+">$50B+</div>
                     <h4>Data-Driven Insights</h4>
                     <p>Leveraging advanced analytics to uncover hidden opportunities and mitigate unseen risks.</p>
                 </div>
                 <div class="stat-item">
                     <div class="stat-icon"><i class="fa-solid fa-handshake"></i></div>
+                    <div class="stat-number" data-count="500" data-suffix="+">500+</div>
                     <h4>Dedicated Partnership</h4>
                     <p>We act as an extension of your executive team, fully invested in your long-term success.</p>
                 </div>
                 <div class="stat-item">
                     <div class="stat-icon"><i class="fa-solid fa-earth-americas"></i></div>
+                    <div class="stat-number" data-count="40" data-suffix="+">40+</div>
                     <h4>Global Perspective</h4>
                     <p>Local nuance combined with international macroeconomic understanding.</p>
                 </div>
@@ -186,6 +192,7 @@
             <p class="subtitle">A systematic methodology for consistent value creation.</p>
             
             <div class="timeline">
+                <div class="timeline-progress-bar" id="timelineProgressBar"></div>
                 <div class="timeline-step">
                     <div class="step-number">1</div>
                     <h4>Discovery</h4>
@@ -383,6 +390,11 @@
             </div>
         </div>
     </footer>
+
+    <!-- Floating Back to Top Button -->
+    <button class="back-to-top-btn" id="backToTopBtn" aria-label="Back to top" type="button">
+        <i class="fa-solid fa-chevron-up"></i>
+    </button>
 
     <script src="js/main.js"></script>
 </body>

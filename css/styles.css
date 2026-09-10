@@ -696,43 +696,360 @@ ul {
     gap: 2rem;
 }
 
+/* ========================================================
+   GLOBAL ANIMATIONS, KEYFRAMES & SCROLL REVEAL SYSTEM
+   ======================================================== */
+
+@keyframes heroFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(28px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+}
+
+@keyframes floatGentle {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes shimmerSweep {
+    0% {
+        transform: translateX(-100%) rotate(30deg);
+    }
+    100% {
+        transform: translateX(250%) rotate(30deg);
+    }
+}
+
+/* Scroll Progress Bar at the top of viewport */
+.scroll-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3.5px;
+    background: linear-gradient(90deg, #10b981, #0284c7, #6366f1);
+    z-index: 99999;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.7);
+    transition: width 0.1s linear;
+    pointer-events: none;
+}
+
+/* Floating Back to Top Button */
+.back-to-top-btn {
+    position: fixed;
+    bottom: 2.25rem;
+    right: 2.25rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #0f172a;
+    color: #ffffff;
+    border: 1px solid #334155;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1500;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.9);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.35);
+}
+
+.back-to-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.back-to-top-btn:hover {
+    background: #10b981;
+    color: #0f172a;
+    border-color: #10b981;
+    transform: translateY(-4px) scale(1.1);
+    box-shadow: 0 14px 28px rgba(16, 185, 129, 0.4);
+}
+
+.back-to-top-btn:active {
+    transform: scale(0.95);
+}
+
+/* Scroll-triggered cascading reveal cards */
+.reveal-card {
+    opacity: 0;
+    transform: translateY(48px) scale(0.96);
+    transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease;
+    will-change: opacity, transform;
+}
+
+.reveal-card.revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Directional slide variants */
+.reveal-card.reveal-left {
+    transform: translateX(-45px) scale(0.96);
+}
+
+.reveal-card.reveal-right {
+    transform: translateX(45px) scale(0.96);
+}
+
+.reveal-card.reveal-left.revealed,
+.reveal-card.reveal-right.revealed {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+}
+
+/* Section Header Scroll Reveal */
+.reveal-header {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+.reveal-header.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Micro-pop on card icons when card becomes revealed */
+@keyframes iconPop {
+    0% {
+        transform: scale(0.85);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.18);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.reveal-card.revealed .icon-box,
+.reveal-card.revealed .stat-icon,
+.reveal-card.revealed .ind-icon,
+.reveal-card.revealed .step-number {
+    animation: iconPop 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+/* Counting animation indicator */
+.stat-number.counting,
+.solutions-stat-val.counting,
+.services-stat-val.counting,
+.teams-stat-val.counting,
+.insights-stat-val.counting,
+.stat-value.counting {
+    display: inline-block;
+    filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.6));
+    animation: floatGentle 1.8s ease-in-out infinite;
+}
+
+/* Hero Section Entrance Animations across all public pages */
+.hero-content h1,
+.about-hero-text h1,
+.solutions-hero-text h1,
+.services-hero-text h1,
+.teams-hero-text h1,
+.insights-hero-text h1,
+.contact-hero-text h1,
+.signin-header h1,
+.signup-header h1,
+.error-content h1 {
+    animation: heroFadeInUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero-content p,
+.about-hero-text p,
+.solutions-hero-desc,
+.services-hero-desc,
+.teams-hero-desc,
+.insights-hero-desc,
+.contact-hero-desc,
+.signin-header p,
+.signup-header p,
+.error-content p {
+    animation: heroFadeInUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+.hero-buttons,
+.hero-stats,
+.solutions-stats-row,
+.services-stats-grid,
+.teams-stats-row,
+.insights-stats-row {
+    animation: heroFadeInUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both;
+}
+
+/* [Signature Hover Animation System positioned at end of file for global cascade supremacy] */
+
+/* Scrolled Navbar State */
+.navbar.navbar-scrolled {
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.97);
+    border-bottom-color: #cbd5e1;
+}
+
+/* Button micro-interactions */
+.btn {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* ========================================================
+   CORE SOLUTIONS CARDS & INTERACTION
+   ======================================================== */
+.solutions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
 .solution-card {
+    position: relative;
     background: var(--white);
     padding: 2.5rem;
-    border-radius: 8px;
-    border: 1.5px solid #334155;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease;
+    overflow: hidden;
+}
+
+/* Top Accent Line Indicator that expands on hover */
+.solution-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #0284c7);
+    transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 3;
+}
+
+/* Shimmer Light Sheen passing across on hover */
+.solution-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        60deg,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 255, 255, 0.6) 50%,
+        rgba(255, 255, 255, 0) 70%
+    );
+    transform: translateX(-100%) rotate(30deg);
+    pointer-events: none;
+    z-index: 2;
 }
 
 .solution-card:hover {
-    transform: translateY(-5px);
-    border-color: #2563eb;
-    box-shadow: 0 14px 28px -6px rgba(37, 99, 235, 0.18), 0 4px 10px rgba(0, 0, 0, 0.05);
+    transform: translateY(-8px) scale(1.01);
+    border-color: #0284c7;
+    box-shadow: 0 20px 35px -8px rgba(2, 132, 199, 0.16), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
+}
+
+.solution-card:hover::before {
+    width: 100%;
+}
+
+.solution-card:hover::after {
+    animation: shimmerSweep 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .solution-card .icon-box {
-    width: 48px;
-    height: 48px;
-    background-color: var(--primary-dark);
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
     color: var(--white);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    border-radius: 6px;
+    font-size: 1.35rem;
+    border-radius: 10px;
     margin-bottom: 1.5rem;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.solution-card:hover .icon-box {
+    background: linear-gradient(135deg, #10b981, #0284c7);
+    transform: scale(1.12) rotate(4deg);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
 }
 
 .solution-card h3 {
     font-size: 1.25rem;
     margin-bottom: 1rem;
+    transition: color 0.3s ease;
 }
 
-/* Why Choose Us Section */
+.solution-card:hover h3 {
+    color: #0f172a;
+}
+
+/* ========================================================
+   WHY CHOOSE US & COUNT-UP STATS
+   ======================================================== */
 .why-choose-us {
     background-color: var(--primary-dark);
     color: var(--white);
+    position: relative;
+    overflow: hidden;
+}
+
+.why-choose-us::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 350px;
+    background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0) 70%);
+    pointer-events: none;
 }
 
 .why-choose-us h2 {
@@ -741,7 +1058,6 @@ ul {
 
 .why-choose-us .subtitle {
     color: #94a3b8;
-    /* Slate 400 */
     max-width: 600px;
     margin: 0 auto 4rem;
 }
@@ -754,25 +1070,90 @@ ul {
 
 .stat-item {
     text-align: center;
+    padding: 2.25rem 1.5rem;
+    border-radius: 12px;
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(51, 65, 85, 0.7);
+    backdrop-filter: blur(8px);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                background 0.35s ease,
+                border-color 0.35s ease,
+                box-shadow 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-8px) scale(1.02);
+    background: rgba(30, 41, 59, 0.85);
+    border-color: rgba(52, 211, 153, 0.5);
+    box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.4), 0 0 25px rgba(16, 185, 129, 0.15);
+}
+
+.stat-item:hover::before {
+    opacity: 1;
 }
 
 .stat-icon {
-    font-size: 2.5rem;
+    font-size: 2.35rem;
     color: var(--accent-bright);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+    display: inline-block;
+}
+
+.stat-item:hover .stat-icon {
+    transform: scale(1.18) rotate(-5deg);
+    filter: drop-shadow(0 4px 14px rgba(52, 211, 153, 0.6));
+}
+
+/* Stat Number with Count-Up Styling */
+.stat-number {
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: var(--accent-bright);
+    line-height: 1.1;
+    margin-bottom: 0.65rem;
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+    display: block;
+    transition: transform 0.35s ease, color 0.35s ease, text-shadow 0.35s ease;
+}
+
+.stat-item:hover .stat-number {
+    transform: scale(1.06);
+    color: #6ee7b7;
+    text-shadow: 0 0 20px rgba(52, 211, 153, 0.5);
 }
 
 .stat-item h4 {
     color: var(--white);
-    margin-bottom: 1rem;
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
 }
 
 .stat-item p {
     color: #94a3b8;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin-bottom: 0;
 }
 
-/* Featured Projects Section */
+/* ========================================================
+   FEATURED PROJECTS CARDS & HOVER EFFECTS
+   ======================================================== */
 .flex-header {
     display: flex;
     justify-content: space-between;
@@ -788,59 +1169,86 @@ ul {
 }
 
 .project-card {
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     background: var(--white);
-    border: 1.5px solid #334155;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease;
 }
 
 .project-card:hover {
-    transform: translateY(-4px);
-    border-color: #2563eb;
-    box-shadow: 0 14px 28px -6px rgba(37, 99, 235, 0.18), 0 4px 10px rgba(0, 0, 0, 0.05);
+    transform: translateY(-8px);
+    border-color: #0284c7;
+    box-shadow: 0 22px 40px -10px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(2, 132, 199, 0.2);
 }
 
 .project-image {
     position: relative;
     height: 300px;
     overflow: hidden;
+    background: #0f172a;
 }
 
 .project-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
 }
 
 .project-card:hover .project-image img {
-    transform: scale(1.05);
+    transform: scale(1.08);
+    filter: brightness(1.05);
 }
 
 .project-tag {
     position: absolute;
-    top: 1rem;
-    left: 1rem;
-    background: rgba(15, 23, 42, 0.8);
+    top: 1.25rem;
+    left: 1.25rem;
+    background: rgba(15, 23, 42, 0.85);
     color: var(--white);
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    backdrop-filter: blur(4px);
+    padding: 0.35rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+}
+
+.project-card:hover .project-tag {
+    background: #0284c7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
 }
 
 .project-content {
-    padding: 2rem;
+    padding: 2.25rem;
 }
 
 .project-content h3 {
     margin-bottom: 0.75rem;
+    transition: color 0.3s ease;
 }
 
-/* Our Approach Section */
+.project-card:hover .project-content h3 {
+    color: #0284c7;
+}
+
+/* ========================================================
+   OUR APPROACH TIMELINE & ANIMATED STEPS
+   ======================================================== */
+.our-approach .subtitle {
+    margin-bottom: 4rem;
+}
+
+/* ========================================================
+   OUR APPROACH TIMELINE & SEQUENTIAL (1 -> 4) ANIMATED STEPS
+   ======================================================== */
 .our-approach .subtitle {
     margin-bottom: 4rem;
 }
@@ -852,38 +1260,146 @@ ul {
     position: relative;
 }
 
+/* Base Track: subtle gray guide line connecting centers of 4 circles (12.5% to 87.5% = 75% width) */
 .timeline::before {
     content: '';
     position: absolute;
-    top: 24px;
-    left: 10%;
-    right: 10%;
-    height: 2px;
-    background-color: var(--border-color);
+    top: 27px;
+    left: 12.5%;
+    width: 75%;
+    height: 4px;
+    background-color: #e2e8f0;
     z-index: 1;
+    border-radius: 4px;
 }
 
+/* Active Fill Line: animates progressively from 1 -> 4 */
+.timeline-progress-bar {
+    position: absolute;
+    top: 27px;
+    left: 12.5%;
+    width: 0%;
+    max-width: 75%;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #0284c7, #3b82f6);
+    z-index: 1;
+    border-radius: 4px;
+    transition: width 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.7);
+}
+
+/* Each Timeline Step: initial hidden / dim state */
 .timeline-step {
     position: relative;
     z-index: 2;
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+    opacity: 0.22;
+    transform: translateY(28px) scale(0.94);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                background 0.35s ease,
+                box-shadow 0.35s ease;
 }
 
+/* When Step is Loaded sequentially */
+.timeline-step.step-active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.timeline-step:hover {
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08);
+}
+
+/* Step Number Circle */
 .step-number {
-    width: 50px;
-    height: 50px;
-    background-color: var(--primary-dark);
-    color: var(--white);
+    width: 56px;
+    height: 56px;
+    background: #e2e8f0;
+    color: #64748b;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 1.35rem;
+    font-weight: 800;
     margin: 0 auto 1.5rem;
-    border: 4px solid var(--bg-light);
+    border: 4px solid var(--white);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
 }
 
-/* Industries We Serve Section */
+/* Step Pop animation when activated */
+@keyframes stepPop {
+    0% {
+        transform: scale(0.8);
+    }
+    60% {
+        transform: scale(1.22);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Glow ring pulse for highlighted current step */
+@keyframes stepPulseRing {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5), 0 8px 20px rgba(16, 185, 129, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 12px rgba(16, 185, 129, 0), 0 8px 20px rgba(16, 185, 129, 0.2);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 8px 20px rgba(16, 185, 129, 0.4);
+    }
+}
+
+/* Active Step Number */
+.timeline-step.step-active .step-number {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
+    animation: stepPop 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Highlighted Current Step (during sequence) */
+.timeline-step.step-highlight .step-number {
+    background: linear-gradient(135deg, #10b981, #0284c7);
+    color: #ffffff;
+    border-color: #ffffff;
+    animation: stepPop 0.55s cubic-bezier(0.16, 1, 0.3, 1) both,
+               stepPulseRing 1.4s ease-out infinite;
+}
+
+.timeline-step:hover .step-number {
+    background: linear-gradient(135deg, #10b981, #0284c7);
+    color: #ffffff;
+    transform: scale(1.15);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.25), 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.timeline-step h4 {
+    margin-bottom: 0.6rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    transition: color 0.3s ease;
+}
+
+.timeline-step p {
+    font-size: 0.92rem;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* ========================================================
+   INDUSTRIES WE SERVE CARDS & HOVER
+   ======================================================== */
 .industries .subtitle {
     margin-bottom: 4rem;
 }
@@ -895,37 +1411,79 @@ ul {
 }
 
 .industry-card {
-    padding: 2rem;
-    border: 1.5px solid #334155;
-    border-radius: 8px;
+    padding: 2.25rem 2rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background: var(--white);
     text-align: left;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.industry-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, #0284c7);
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .industry-card:hover {
-    transform: translateY(-4px);
-    border-color: #2563eb;
-    box-shadow: 0 14px 28px -6px rgba(37, 99, 235, 0.18), 0 4px 10px rgba(0, 0, 0, 0.05);
+    transform: translateY(-8px);
+    border-color: #0284c7;
+    box-shadow: 0 20px 35px -8px rgba(2, 132, 199, 0.16), 0 6px 12px rgba(0, 0, 0, 0.04);
+}
+
+.industry-card:hover::before {
+    width: 100%;
 }
 
 .ind-icon {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     background-color: var(--bg-light);
     color: var(--primary-dark);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: 10px;
     margin-bottom: 1.5rem;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid #e2e8f0;
+}
+
+.industry-card:hover .ind-icon {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: var(--accent-bright);
+    transform: scale(1.12) rotate(4deg);
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.2);
+}
+
+.industry-card h4 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    transition: color 0.3s ease;
+}
+
+.industry-card:hover h4 {
+    color: #0284c7;
 }
 
 .text-sm {
     font-size: 0.9rem;
 }
 
-/* Testimonials Section */
+/* ========================================================
+   TESTIMONIALS CARDS & HOVER
+   ======================================================== */
 .testimonial-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -936,42 +1494,61 @@ ul {
 .testimonial-card {
     background: var(--white);
     padding: 3rem;
-    border-radius: 8px;
-    border: 1.5px solid #334155;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease;
+    position: relative;
 }
 
 .testimonial-card:hover {
-    transform: translateY(-4px);
-    border-color: #2563eb;
-    box-shadow: 0 14px 28px -6px rgba(37, 99, 235, 0.18), 0 4px 10px rgba(0, 0, 0, 0.05);
+    transform: translateY(-6px);
+    border-color: #0284c7;
+    box-shadow: 0 20px 35px -8px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(2, 132, 199, 0.15);
 }
 
 .stars {
-    color: var(--accent-color);
+    color: #f59e0b;
     margin-bottom: 1.5rem;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    display: flex;
+    gap: 0.25rem;
 }
 
+.testimonial-card:hover .stars i {
+    animation: floatGentle 1.2s ease-in-out infinite;
+}
+
+.testimonial-card:hover .stars i:nth-child(2) { animation-delay: 0.1s; }
+.testimonial-card:hover .stars i:nth-child(3) { animation-delay: 0.2s; }
+.testimonial-card:hover .stars i:nth-child(4) { animation-delay: 0.3s; }
+.testimonial-card:hover .stars i:nth-child(5) { animation-delay: 0.4s; }
+
 .quote {
-    font-size: 1.1rem;
+    font-size: 1.12rem;
     color: var(--primary-dark);
     font-style: italic;
+    line-height: 1.65;
     margin-bottom: 2rem;
 }
 
 .author strong {
     display: block;
     color: var(--primary-dark);
+    font-size: 1.05rem;
 }
 
 .author span {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-light);
+    letter-spacing: 0.5px;
 }
 
-/* Latest Insights Section */
+/* ========================================================
+   LATEST INSIGHTS CARDS & HOVER
+   ======================================================== */
 .insights-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -979,41 +1556,58 @@ ul {
 }
 
 .insight-card {
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     background: var(--white);
-    border: 1.5px solid #334155;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease;
 }
 
 .insight-card:hover {
-    transform: translateY(-4px);
-    border-color: #2563eb;
-    box-shadow: 0 14px 28px -6px rgba(37, 99, 235, 0.18), 0 4px 10px rgba(0, 0, 0, 0.05);
+    transform: translateY(-8px);
+    border-color: #0284c7;
+    box-shadow: 0 20px 35px -8px rgba(15, 23, 42, 0.14), 0 0 0 1px rgba(2, 132, 199, 0.2);
 }
 
 .insight-card img {
     width: 100%;
-    height: 200px;
+    height: 220px;
     object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+}
+
+.insight-card:hover img {
+    transform: scale(1.08);
+    filter: brightness(1.04);
 }
 
 .insight-content {
-    padding: 1.5rem;
+    padding: 1.75rem;
 }
 
 .insight-content .date {
     display: block;
-    font-size: 0.85rem;
-    color: var(--text-light);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #0284c7;
     margin-bottom: 0.75rem;
+    letter-spacing: 0.5px;
 }
 
 .insight-content h3 {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
+    line-height: 1.4;
     margin-bottom: 0;
+    transition: color 0.3s ease;
 }
+
+.insight-card:hover .insight-content h3 {
+    color: #0284c7;
+}
+
 
 /* CTA Section */
 .cta-section {
@@ -1462,7 +2056,7 @@ body.auth-page {
 
 .practitioner-card i {
     font-size: 1.5rem;
-    color: var(--primary-dark);
+    color: #ffffff;
     margin-bottom: 1.5rem;
 }
 
@@ -1776,7 +2370,7 @@ body.auth-page {
 
 .diff-card i {
     font-size: 1.5rem;
-    color: var(--primary-dark);
+    color: #ffffff;
     margin-bottom: 1.5rem;
     display: block;
 }
@@ -1831,7 +2425,7 @@ body.auth-page {
 
 .value-card i {
     font-size: 1.5rem;
-    color: var(--primary-dark);
+    color: #ffffff;
     margin-bottom: 1.25rem;
 }
 
@@ -1860,75 +2454,142 @@ body.auth-page {
     text-transform: uppercase;
 }
 
+/* ========================================================
+   CHRONOLOGY INTERACTIVE VERTICAL SCROLL TIMELINE
+   - Continuous vertical connecting line from year to year
+   - Real-time scroll drawing progress with radiant gradient fill
+   - Active circle glow, year highlight & card illumination
+   ======================================================== */
 .timeline-list {
     margin: 4rem auto 0;
     display: flex;
     flex-direction: column;
-    gap: 0;
-    max-width: 860px;
+    gap: 2rem;
+    max-width: 900px;
     width: 100%;
+    position: relative;
+}
+
+/* Background vertical guide line (runs through centers of circles) */
+.timeline-track-bg {
+    position: absolute;
+    left: 9px; /* horizontally aligns with center of 20px marker */
+    width: 3px;
+    background-color: #e2e8f0;
+    border-radius: 3px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Active vertical gradient line that draws downward as you scroll */
+.timeline-track-fill {
+    position: absolute;
+    left: 9px;
+    width: 3px;
+    height: 0px;
+    background: linear-gradient(180deg, #10b981 0%, #0284c7 100%);
+    border-radius: 3px;
+    z-index: 2;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.7);
+    pointer-events: none;
+    transition: height 0.08s linear;
 }
 
 .tl-item {
     display: grid;
-    grid-template-columns: 14px 80px minmax(0, 1fr);
-    gap: 3rem;
-    padding-bottom: 4rem;
+    grid-template-columns: 20px 85px minmax(0, 1fr);
+    gap: 2.25rem;
+    align-items: flex-start;
     position: relative;
+    z-index: 3;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.tl-item:last-child {
-    padding-bottom: 0;
-}
-
-/* Vertical line */
-.tl-item::before {
-    content: '';
-    position: absolute;
-    left: 6px;
-    top: 24px;
-    bottom: -8px;
-    width: 2px;
-    background-color: #cbd5e1;
-}
-
-.tl-item:last-child::before {
-    height: 48px;
-    bottom: auto;
-}
-
+/* Marker circle */
 .tl-marker {
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--primary-dark);
+    width: 20px;
+    height: 20px;
+    border: 3px solid #94a3b8;
     border-radius: 50%;
-    background-color: var(--white);
-    margin-top: 8px;
+    background-color: #ffffff;
+    margin-top: 10px;
     position: relative;
-    z-index: 2;
+    z-index: 4;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
+/* Active Marker reached by scroll line */
+.tl-item.tl-active .tl-marker {
+    border-color: #10b981 !important;
+    background: linear-gradient(135deg, #10b981, #0284c7) !important;
+    transform: scale(1.35) !important;
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.25), 0 0 16px rgba(16, 185, 129, 0.6) !important;
+}
+
+/* Year label */
 .tl-year {
-    font-size: 1.5rem;
+    font-size: 1.65rem;
     font-weight: 800;
-    color: var(--primary-dark);
+    color: #64748b;
+    margin-top: 5px;
+    letter-spacing: -0.02em;
     display: flex;
     align-items: flex-start;
+    transition: all 0.35s ease;
+}
+
+.tl-item.tl-active .tl-year {
+    color: #0f172a !important;
+    font-weight: 900 !important;
+    transform: translateX(4px);
+    text-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+}
+
+/* Milestone content card */
+.tl-content {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 1.75rem 2.25rem;
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease;
 }
 
 .tl-content h4 {
-    margin-bottom: 0.5rem;
-    font-size: 1.25rem;
+    margin-bottom: 0.6rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    color: var(--primary-dark);
+    color: #0f172a;
+    transition: color 0.3s ease;
 }
 
 .tl-content p {
     margin-bottom: 0;
-    max-width: 620px;
     font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--text-light);
+    line-height: 1.65;
+    color: #64748b;
+}
+
+/* Active milestone state */
+.tl-item.tl-active .tl-content {
+    border-color: #0284c7;
+    box-shadow: 0 12px 28px -6px rgba(2, 132, 199, 0.16), 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.tl-item.tl-active .tl-content h4 {
+    color: #0284c7;
+}
+
+/* Hover micro-interaction */
+.tl-content:hover {
+    transform: translateY(-4px);
+    border-color: #0284c7;
+    box-shadow: 0 20px 35px -8px rgba(2, 132, 199, 0.22);
 }
 
 /* About CTA */
@@ -2266,7 +2927,7 @@ body.auth-page {
 
 .practice-icon {
     font-size: 1.25rem;
-    color: #0f172a;
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -10381,4 +11042,460 @@ body.auth-page {
         flex-direction: column;
         align-items: stretch;
     }
+}
+
+/* ========================================================
+   GLOBAL SIGNATURE HOVER ANIMATION SYSTEM (ALL PUBLIC PAGES)
+   - Matches the signature card hover aesthetic of index.html
+   - Expanding Top Gradient Bar (Emerald #10b981 -> Sky Blue #0284c7)
+   - Diagonal Shimmer Sweep Light Sheen
+   - 3D Smooth Elevation Lift (-8px scale 1.01) + Cyan Glow Border (#0284c7)
+   - Rounded Slate Icon Box Transforming to Radiant Emerald/Cyan Glow
+   ======================================================== */
+
+/* 1. All Card Containers: Base Position, Overflow & Smooth Transitions */
+.solution-card,
+.practice-card,
+.framework-card,
+.flagship-card,
+.specialized-card,
+.deployment-card,
+.practitioner-card,
+.mv-card,
+.phil-card,
+.method-card,
+.diff-card,
+.value-card,
+.tl-content,
+.expert-card,
+.collab-card,
+.join-pillar-item,
+.insights-stat-card,
+.flagship-dossier-card,
+.memo-card,
+.vector-card,
+.playbook-card,
+.report-card,
+.chart-card,
+.guide-row-card,
+.guarantee-card,
+.standards-card,
+.hubs-card,
+.office-card,
+.faq-card,
+.intake-form-card,
+.board-photo-card,
+.map-canvas-card,
+.map-inspector-card,
+.recovery-card,
+.role-card {
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease !important;
+}
+
+/* Maintain dark style for dark cards */
+.mv-card.dark-card {
+    border: 1px solid #334155 !important;
+}
+
+/* 2. Expanding Top Gradient Line Indicator (width: 0% -> 100% on hover) */
+.solution-card::before,
+.practice-card::before,
+.framework-card::before,
+.flagship-card::before,
+.specialized-card::before,
+.deployment-card::before,
+.practitioner-card::before,
+.mv-card::before,
+.phil-card::before,
+.method-card::before,
+.diff-card::before,
+.value-card::before,
+.tl-content::before,
+.expert-card::before,
+.collab-card::before,
+.join-pillar-item::before,
+.insights-stat-card::before,
+.flagship-dossier-card::before,
+.memo-card::before,
+.vector-card::before,
+.playbook-card::before,
+.report-card::before,
+.chart-card::before,
+.guide-row-card::before,
+.guarantee-card::before,
+.standards-card::before,
+.hubs-card::before,
+.office-card::before,
+.faq-card::before,
+.intake-form-card::before,
+.board-photo-card::before,
+.map-canvas-card::before,
+.map-inspector-card::before,
+.recovery-card::before,
+.role-card::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 0% !important;
+    height: 4px !important;
+    background: linear-gradient(90deg, #10b981, #0284c7) !important;
+    transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 10 !important;
+    pointer-events: none !important;
+}
+
+/* 3. Diagonal Shimmer Light Sheen Passing Across Card */
+.solution-card::after,
+.practice-card::after,
+.framework-card::after,
+.flagship-card::after,
+.specialized-card::after,
+.deployment-card::after,
+.practitioner-card::after,
+.mv-card::after,
+.phil-card::after,
+.method-card::after,
+.diff-card::after,
+.value-card::after,
+.tl-content::after,
+.expert-card::after,
+.collab-card::after,
+.join-pillar-item::after,
+.insights-stat-card::after,
+.flagship-dossier-card::after,
+.memo-card::after,
+.vector-card::after,
+.playbook-card::after,
+.report-card::after,
+.chart-card::after,
+.guide-row-card::after,
+.guarantee-card::after,
+.standards-card::after,
+.hubs-card::after,
+.office-card::after,
+.faq-card::after,
+.intake-form-card::after,
+.board-photo-card::after,
+.map-canvas-card::after,
+.map-inspector-card::after,
+.recovery-card::after,
+.role-card::after {
+    content: '' !important;
+    position: absolute !important;
+    top: -50% !important;
+    left: -50% !important;
+    width: 200% !important;
+    height: 200% !important;
+    background: linear-gradient(
+        60deg,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 255, 255, 0.6) 50%,
+        rgba(255, 255, 255, 0) 70%
+    ) !important;
+    transform: translateX(-100%) rotate(30deg) !important;
+    pointer-events: none !important;
+    z-index: 9 !important;
+}
+
+/* 4. Active Card Hover State: 3D Lift + Glowing Border (#0284c7) */
+.solution-card:hover,
+.practice-card:hover,
+.framework-card:hover,
+.flagship-card:hover,
+.specialized-card:hover,
+.deployment-card:hover,
+.practitioner-card:hover,
+.mv-card:hover,
+.phil-card:hover,
+.method-card:hover,
+.diff-card:hover,
+.value-card:hover,
+.tl-content:hover,
+.expert-card:hover,
+.collab-card:hover,
+.join-pillar-item:hover,
+.insights-stat-card:hover,
+.flagship-dossier-card:hover,
+.memo-card:hover,
+.vector-card:hover,
+.playbook-card:hover,
+.report-card:hover,
+.chart-card:hover,
+.guide-row-card:hover,
+.guarantee-card:hover,
+.standards-card:hover,
+.hubs-card:hover,
+.office-card:hover,
+.faq-card:hover,
+.intake-form-card:hover,
+.board-photo-card:hover,
+.map-canvas-card:hover,
+.map-inspector-card:hover,
+.recovery-card:hover,
+.role-card:hover {
+    transform: translateY(-8px) scale(1.01) !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 20px 35px -8px rgba(2, 132, 199, 0.22), 0 8px 16px -4px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Expanding top line on hover */
+.solution-card:hover::before,
+.practice-card:hover::before,
+.framework-card:hover::before,
+.flagship-card:hover::before,
+.specialized-card:hover::before,
+.deployment-card:hover::before,
+.practitioner-card:hover::before,
+.mv-card:hover::before,
+.phil-card:hover::before,
+.method-card:hover::before,
+.diff-card:hover::before,
+.value-card:hover::before,
+.tl-content:hover::before,
+.expert-card:hover::before,
+.collab-card:hover::before,
+.join-pillar-item:hover::before,
+.insights-stat-card:hover::before,
+.flagship-dossier-card:hover::before,
+.memo-card:hover::before,
+.vector-card:hover::before,
+.playbook-card:hover::before,
+.report-card:hover::before,
+.chart-card:hover::before,
+.guide-row-card:hover::before,
+.guarantee-card:hover::before,
+.standards-card:hover::before,
+.hubs-card:hover::before,
+.office-card:hover::before,
+.faq-card:hover::before,
+.intake-form-card:hover::before,
+.board-photo-card:hover::before,
+.map-canvas-card:hover::before,
+.map-inspector-card:hover::before,
+.recovery-card:hover::before,
+.role-card:hover::before {
+    width: 100% !important;
+}
+
+/* Diagonal Shimmer Sweep triggers on hover */
+.solution-card:hover::after,
+.practice-card:hover::after,
+.framework-card:hover::after,
+.flagship-card:hover::after,
+.specialized-card:hover::after,
+.deployment-card:hover::after,
+.practitioner-card:hover::after,
+.mv-card:hover::after,
+.phil-card:hover::after,
+.method-card:hover::after,
+.diff-card:hover::after,
+.value-card:hover::after,
+.tl-content:hover::after,
+.expert-card:hover::after,
+.collab-card:hover::after,
+.join-pillar-item:hover::after,
+.insights-stat-card:hover::after,
+.flagship-dossier-card:hover::after,
+.memo-card:hover::after,
+.vector-card:hover::after,
+.playbook-card:hover::after,
+.report-card:hover::after,
+.chart-card:hover::after,
+.guide-row-card:hover::after,
+.guarantee-card:hover::after,
+.standards-card:hover::after,
+.hubs-card:hover::after,
+.office-card:hover::after,
+.faq-card:hover::after,
+.intake-form-card:hover::after,
+.board-photo-card:hover::after,
+.map-canvas-card:hover::after,
+.map-inspector-card:hover::after,
+.recovery-card:hover::after,
+.role-card:hover::after {
+    animation: shimmerSweep 0.9s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* 5. ICON BOX SIGNATURE SYSTEM: Sleek Slate Box bursting into Glowing Emerald/Cyan on Card Hover */
+/* Base icon box state */
+.solution-card .icon-box,
+.practice-card .practice-icon,
+.deployment-card .deployment-phase-icon,
+.flagship-card .flagship-icon-overlay,
+.practitioner-card > i,
+.diff-card > i,
+.value-card > i,
+.guarantee-card .guarantee-icon-wrap,
+.standards-card > i,
+.hubs-card > i,
+.office-card > i,
+.memo-card .memo-icon,
+.vector-card .vector-icon,
+.guide-row-card > i,
+.role-card .role-icon,
+.recovery-card .card-icon,
+.recovery-card > i {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+    color: #ffffff !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.3rem !important;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12) !important;
+    margin-bottom: 1.25rem !important;
+}
+
+/* Base icon box state - Crisp Dark Slate Box with subtle border */
+.solution-card .icon-box,
+.practice-card .practice-icon,
+.deployment-card .deployment-phase-icon,
+.flagship-card .flagship-icon-overlay,
+.practitioner-card > i,
+.diff-card > i,
+.value-card > i,
+.guarantee-card .guarantee-icon-wrap,
+.standards-card > i,
+.hubs-card > i,
+.office-card > i,
+.memo-card .memo-icon,
+.vector-card .vector-icon,
+.guide-row-card > i,
+.role-card .role-icon,
+.recovery-card .card-icon,
+.recovery-card > i {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+    border: 1px solid #334155 !important;
+    color: #ffffff !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.3rem !important;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12) !important;
+    margin-bottom: 1.25rem !important;
+}
+
+/* Explicitly force pure white color on ALL icon elements, inner <i>, and FontAwesome ::before in unhovered state */
+.solution-card .icon-box,
+.solution-card .icon-box i,
+.solution-card .icon-box i::before,
+.practice-card .practice-icon,
+.practice-card .practice-icon i,
+.practice-card .practice-icon i::before,
+.deployment-card .deployment-phase-icon,
+.deployment-card .deployment-phase-icon i,
+.deployment-card .deployment-phase-icon i::before,
+.flagship-card .flagship-icon-overlay,
+.flagship-card .flagship-icon-overlay i,
+.flagship-card .flagship-icon-overlay i::before,
+.practitioner-card > i,
+.practitioner-card > i::before,
+.practitioner-card i,
+.practitioner-card i::before,
+.diff-card > i,
+.diff-card > i::before,
+.diff-card i,
+.diff-card i::before,
+.value-card > i,
+.value-card > i::before,
+.value-card i,
+.value-card i::before,
+.guarantee-card .guarantee-icon-wrap,
+.guarantee-card .guarantee-icon-wrap i,
+.guarantee-card .guarantee-icon-wrap i::before,
+.guarantee-card i,
+.guarantee-card i::before,
+.standards-card > i,
+.standards-card > i::before,
+.standards-card i,
+.standards-card i::before,
+.hubs-card > i,
+.hubs-card > i::before,
+.hubs-card i,
+.hubs-card i::before,
+.office-card > i,
+.office-card > i::before,
+.office-card i,
+.office-card i::before,
+.memo-card .memo-icon,
+.memo-card .memo-icon i,
+.memo-card .memo-icon i::before,
+.vector-card .vector-icon,
+.vector-card .vector-icon i,
+.vector-card .vector-icon i::before,
+.guide-row-card > i,
+.guide-row-card > i::before,
+.guide-row-card i,
+.guide-row-card i::before,
+.role-card .role-icon,
+.role-card .role-icon i,
+.role-card .role-icon i::before,
+.recovery-card .card-icon,
+.recovery-card .card-icon i,
+.recovery-card .card-icon i::before,
+.recovery-card > i,
+.recovery-card > i::before {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Glowing Emerald-to-Cyan Transform on Card Hover (Matches Screenshot) */
+.solution-card:hover .icon-box,
+.practice-card:hover .practice-icon,
+.deployment-card:hover .deployment-phase-icon,
+.flagship-card:hover .flagship-icon-overlay,
+.practitioner-card:hover > i,
+.diff-card:hover > i,
+.value-card:hover > i,
+.guarantee-card:hover .guarantee-icon-wrap,
+.standards-card:hover > i,
+.hubs-card:hover > i,
+.office-card:hover > i,
+.memo-card:hover .memo-icon,
+.vector-card:hover .vector-icon,
+.guide-row-card:hover > i,
+.role-card:hover .role-icon,
+.recovery-card:hover .card-icon,
+.recovery-card:hover > i {
+    background: linear-gradient(135deg, #10b981, #0284c7) !important;
+    color: #ffffff !important;
+    transform: scale(1.15) rotate(4deg) !important;
+    box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45) !important;
+}
+
+/* Photo and specific card hover micro-animations */
+.expert-card:hover .expert-photo-wrap img,
+.board-photo-card:hover img {
+    transform: scale(1.05) !important;
+    transition: transform 0.4s ease !important;
+}
+
+.expert-card .expert-external-icon {
+    transition: transform 0.3s ease, color 0.3s ease !important;
+}
+
+.expert-card:hover .expert-external-icon {
+    color: #0284c7 !important;
+    transform: translate(3px, -3px) !important;
 }
